@@ -1767,6 +1767,72 @@ public:
 };
 ```
 
+#### [1079. 活字印刷](https://leetcode.cn/problems/letter-tile-possibilities/)
+
+你有一套活字字模 tiles，其中每个字模上都刻有一个字母 tiles[i]。返回你可以印出的非空字母序列的数目。
+
+注意：本题中，每个活字字模只能使用一次。
+
+ **示例 1：**
+
+```
+输入："AAB"
+输出：8
+解释：可能的序列为 "A", "B", "AA", "AB", "BA", "AAB", "ABA", "BAA"。
+```
+
+**示例 2：**
+
+```
+输入："AAABBC"
+输出：188
+```
+
+**示例 3：**
+
+```
+输入："V"
+输出：1
+```
+
+**提示：**
+
+- `1 <= tiles.length <= 7`
+- `tiles` 由大写英文字母组成
+
+**c++代码实现：**
+
+```c
+class Solution {
+public:
+    
+    int dfs(string& s,int u){
+        int res=1; //每次都至少有一个
+        if(u==s.size()) return res;
+        for(int i=0;i<s.size();i++){
+            //如果相同的数的第一个已经使用了，则直接跳过
+            if(i && s[i]==s[i-1]) continue;
+            //已经使用则直接跳过
+            if(s[i]=='.') continue;
+            char c=s[i];
+            s[i]='.';
+            res+=dfs(s,u+1);
+            s[i]=c; //回溯
+        }
+        return res;
+    }
+
+    int numTilePossibilities(string tiles) {
+        //排序去重复
+        sort(tiles.begin(),tiles.end());
+        //减去空字符串
+        return dfs(tiles,0)-1;
+    }
+};
+```
+
+
+
 #### [282. 给表达式添加运算符](https://leetcode.cn/problems/expression-add-operators/)todo
 
 
