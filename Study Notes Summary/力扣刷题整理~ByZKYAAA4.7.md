@@ -2939,6 +2939,36 @@ public:
 };
 ```
 
+```c++
+class Solution {
+private:
+    int n;
+    vector<vector<int>> res;
+    vector<int> path;
+
+public:
+    
+    void dfs(vector<int>& nums,int u){
+        if(u==n){
+            res.push_back(path);
+            return;
+        }
+        //选择u位置
+        path.push_back(nums[u]);
+        dfs(nums,u+1);
+        path.pop_back();
+        //不选择u位置
+        dfs(nums,u+1);
+    }
+
+    vector<vector<int>> subsets(vector<int>& nums) {
+        n = nums.size();
+        dfs(nums,0);
+        return res;        
+    }
+};
+```
+
 #### [784. 字母大小写全排列](https://leetcode.cn/problems/letter-case-permutation/)
 
 给定一个字符串 `s` ，通过将字符串 `s` 中的每个字母转变大小写，我们可以获得一个新的字符串。
