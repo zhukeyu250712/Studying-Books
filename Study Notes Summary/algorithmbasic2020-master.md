@@ -1,0 +1,954 @@
+## DP
+
+### 1、经典递归
+
+#### （1）汉诺塔问题
+
+**题目描述：**
+
+​		汉诺塔问题是指：一块板上有三根针 A、B、C。A 针上套有 64 个大小不等的圆盘，按照大的在下、小的在上的顺序排列，要把这 64 个圆盘从 A 针移动到 C 针上，每次只能移动一个圆盘，移动过程可以借助 B  针。但在任何时候，任何针上的圆盘都必须保持大盘在下，小盘在上。从键盘输入需移动的圆盘个数，给出移动的过程。
+
+**算法思想：**
+
+​		对于汉诺塔问题，当只移动一个圆盘时，直接将圆盘从 A 针移动到 C 针。若移动的圆盘为 n(n>1)，则分成几步走：把 (n-1)  个圆盘从 A 针移动到 B 针（借助 C 针）；A 针上的最后一个圆盘移动到 C 针；B 针上的 (n-1) 个圆盘移动到 C 针（借助 A  针）。每做一遍，移动的圆盘少一个，逐次递减，最后当 n 为 1 时，完成整个移动过程。
+
+ 因此，解决汉诺塔问题可设计一个递归函数，利用递归实现圆盘的整个移动过程，问题的解决过程是对实际操作的模拟。
+
+```java
+package class18;
+
+import java.util.HashSet;
+import java.util.Stack;
+/*
+question : 打印 N 层汉诺塔从最左边移动到最右边的全部过程
+ */
+public class Code02_Hanoi {
+
+    public static void hanoi1(int n) {
+        leftToRight(n);
+    }
+
+    // 请把1~N层圆盘 从左 -> 右
+    public static void leftToRight(int n) {
+        if (n == 1) { // base case
+            System.out.println("Move 1 from left to right");
+            return;
+        }
+        leftToMid(n - 1);
+        System.out.println("Move " + n + " from left to right");
+        midToRight(n - 1);
+    }
+
+    // 请把1~N层圆盘 从左 -> 中
+    public static void leftToMid(int n) {
+        if (n == 1) {
+            System.out.println("Move 1 from left to mid");
+            return;
+        }
+        leftToRight(n - 1);
+        System.out.println("Move " + n + " from left to mid");
+        rightToMid(n - 1);
+    }
+
+    public static void rightToMid(int n) {
+        if (n == 1) {
+            System.out.println("Move 1 from right to mid");
+            return;
+        }
+        rightToLeft(n - 1);
+        System.out.println("Move " + n + " from right to mid");
+        leftToMid(n - 1);
+    }
+
+    public static void midToRight(int n) {
+        if (n == 1) {
+            System.out.println("Move 1 from mid to right");
+            return;
+        }
+        midToLeft(n - 1);
+        System.out.println("Move " + n + " from mid to right");
+        leftToRight(n - 1);
+    }
+
+    public static void midToLeft(int n) {
+        if (n == 1) {
+            System.out.println("Move 1 from mid to left");
+            return;
+        }
+        midToRight(n - 1);
+        System.out.println("Move " + n + " from mid to left");
+        rightToLeft(n - 1);
+    }
+
+    public static void rightToLeft(int n) {
+        if (n == 1) {
+            System.out.println("Move 1 from right to left");
+            return;
+        }
+        rightToMid(n - 1);
+        System.out.println("Move " + n + " from right to left");
+        midToLeft(n - 1);
+    }
+
+
+    public static void hanoi2(int n) {
+        if (n > 0) {
+            func(n, "left", "right", "mid");
+        }
+    }
+
+    /*
+    1~N
+    在:from
+    到: to
+    另一个: other
+    */
+    public static void func(int N, String from, String to, String other) {
+        if (N == 1) { // base
+            System.out.println("Move 1 from " + from + " to " + to);
+        } else {
+            func(N - 1, from, other, to);
+            System.out.println("Move " + N + " from " + from + " to " + to);
+            func(N - 1, other, to, from);
+        }
+    }
+
+    public static class Record {
+        public int level;
+        public String from;
+        public String to;
+        public String other;
+
+        public Record(int l, String f, String t, String o) {
+            level = l;
+            from = f;
+            to = t;
+            other = o;
+        }
+    }
+
+    // 之前的迭代版本，很多同学表示看不懂
+    // 所以我换了一个更容易理解的版本
+    // 看注释吧！好懂！
+    // 你把汉诺塔问题想象成二叉树
+    // 比如当前还剩i层，其实打印这个过程就是：
+    // 1) 去打印第一部分 -> 左子树
+    // 2) 打印当前的动作 -> 当前节点
+    // 3) 去打印第二部分 -> 右子树
+    // 那么你只需要记录每一个任务 : 有没有加入过左子树的任务
+    // 就可以完成迭代对递归的替代了
+    public static void hanoi3(int N) {
+        if (N < 1) {
+            return;
+        }
+        // 每一个记录进栈
+        Stack<Record> stack = new Stack<>();
+        // 记录每一个记录有没有加入过左子树的任务
+        HashSet<Record> finishLeft = new HashSet<>();
+        // 初始的任务，认为是种子
+        stack.add(new Record(N, "left", "right", "mid"));
+        while (!stack.isEmpty()) {
+            // 弹出当前任务
+            Record cur = stack.pop();
+            if (cur.level == 1) {
+                // 如果层数只剩1了
+                // 直接打印
+                System.out.println("Move 1 from " + cur.from + " to " + cur.to);
+            } else {
+                // 如果不只1层
+                if (!finishLeft.contains(cur)) {
+                    // 如果当前任务没有加入过左子树的任务
+                    // 现在就要加入了！
+                    // 把当前的任务重新压回去，因为还不到打印的时候
+                    // 再加入左子树任务！
+                    finishLeft.add(cur);
+                    stack.push(cur);
+                    stack.push(new Record(cur.level - 1, cur.from, cur.other, cur.to));
+                } else {
+                    // 如果当前任务加入过左子树的任务
+                    // 说明此时已经是第二次弹出了！
+                    // 说明左子树的所有打印任务都完成了
+                    // 当前可以打印了！
+                    // 然后加入右子树的任务
+                    // 当前的任务可以永远的丢弃了！
+                    // 因为完成了左子树、打印了自己、加入了右子树
+                    // 再也不用回到这个任务了
+                    System.out.println("Move " + cur.level + " from " + cur.from + " to " + cur.to);
+                    stack.push(new Record(cur.level - 1, cur.other, cur.to, cur.from));
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        int n = 3;
+        hanoi1(n);
+        System.out.println("============");
+        // 一个递归函数可以通过增加参数，来增加可能性
+        hanoi2(n);
+        System.out.println("============");
+        hanoi3(n);
+    }
+}
+```
+
+#### （2）子序列问题
+
+**问题描述：**
+
+打印一个字符串的全部子序列(可以不连续)
+打印一个字符串的全部子序列，要求不要出现重复字面值的子序列
+
+```java
+package class18;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+/*
+question1: 打印一个字符串的全部子序列(可以不连续)
+question2: 打印一个字符串的全部子序列，要求不要出现重复字面值的子序列
+* 递归：
+* （1）递归函数的意义
+* （2）base case
+* */
+public class Code03_PrintAllSubsquences {
+
+    public static List<String> subs(String s){
+        char[] str = s.toCharArray();
+        String path = "";
+        List<String> ans = new ArrayList<>();
+        dfs(str, 0, ans, path);
+        return ans;
+    }
+
+    //str 固定参数
+    //来到str[u]字符, u是位置
+    // str[0~u-1]已经走过了，之前都遍历好了，存在path里面，之前的决定已经不能改变了，就是path
+    //str[u....]还未确定，u前面已经确定了，u之后还能自己选择
+    //所有的子序列path当前路径的最终答案，都放在ans里面
+    public static void dfs(char[] str, int u, List<String> ans, String path){
+        if(u==str.length){
+            ans.add(path);
+            return;
+        }
+        //不选择u位置的字符
+        dfs(str,u+1,ans,path);
+
+        //选择u位置的字符
+        dfs(str, u+1,ans, path + String.valueOf(str[u]));
+    }
+
+
+    public static List<String> subsNoRepeat(String s){
+        char[] str = s.toCharArray();
+        String path = "";
+        HashSet<String> set = new HashSet<>();
+        dfs2(str, 0, set, path);
+        List<String> ans = new ArrayList<>();
+        for(String cur :set){
+            ans.add(cur);
+        }
+        return ans;
+    }
+
+    public static void dfs2(char[] str,int u, HashSet<String> set, String path){
+        if(u == str.length){
+            set.add(path);
+            return;
+        }
+        //不选择u位置
+        dfs2(str, u+1, set, path);
+
+        //选择u位置
+        dfs2(str, u+1, set, path + String.valueOf(str[u]));
+    }
+
+    public static void main(String[] args) {
+        String str="abc";
+        System.out.println("*****打印一个字符串的全部子序列(可以不连续)*********");
+        List<String> ans1 = subs(str);
+        for(String s:ans1){
+            System.out.println(s);
+        }
+        System.out.println("*********************");
+
+        System.out.println("*****打印一个字符串的全部子序列，要求不要出现重复字面值的子序列********");
+        List<String> ans2 = subsNoRepeat(str);
+        for(String s:ans2){
+            System.out.println(s);
+        }
+        System.out.println("*********************");
+    }
+}
+```
+
+#### （3）全排列
+
+**问题描述：**
+
+打印一个字符串的全排列
+打印一个字符串的全排列,要求不重复
+
+```java
+package class18;
+
+/*
+question1: 打印一个字符串的全排列
+question2: 打印一个字符串的全排列,要求不重复
+* 清除线程
+* */
+import java.util.ArrayList;
+import java.util.List;
+
+public class Code04_PrintAllPermutations {
+
+    public static List<String> permutation1(String s){
+        List<String> ans = new ArrayList<>();
+        if (s == null || s.length() == 0){
+            return ans;
+        }
+        char[] str = s.toCharArray();
+        ArrayList<Character> rest = new ArrayList<>();
+        for(char ch : str) {
+            rest.add(ch);
+        }
+        String path = "";
+        f(rest, path, ans);
+        return ans;
+    }
+
+    public static void f(ArrayList<Character> rest, String path, List<String> ans){
+        if (rest.isEmpty()){    //base case
+            ans.add(path);
+        }else {
+            for(int i=0; i < rest.size(); i++){
+                char cur = rest.get(i);
+                rest.remove(i);
+                f(rest, path+cur, ans);
+                rest.add(i ,cur);   // 回溯恢复现场
+            }
+        }
+    }
+
+    public static List<String> permutation2(String s){
+        List<String> ans = new ArrayList<>();
+        if (s == null || s.length() == 0){
+            return ans;
+        }
+        char[] str = s.toCharArray();
+        g1(str, 0, ans);
+        return ans;
+    }
+
+    public static void g1(char[] str, int index, List<String> ans){
+        if (index == str.length){
+            ans.add(String.valueOf(str));
+        } else {
+            for(int i = index; i<str.length; i++) {
+                swap(str, index, i);
+                g1(str, index+1, ans);
+                swap(str, index, i);
+            }
+        }
+    }
+
+    //去重复
+    public static List<String> permutation3(String s){
+        List<String> ans = new ArrayList<>();
+        if (s == null || s.length() == 0){
+            return ans;
+        }
+        char[] str = s.toCharArray();
+        g2(str, 0, ans);
+        return ans;
+    }
+
+    public static void g2(char[] str, int index, List<String> ans){
+        if (index == str.length){
+            ans.add(String.valueOf(str));
+        } else {
+            boolean[] visited = new boolean[256];
+            for(int i = index; i<str.length; i++) {
+                if(!visited[str[i]]){
+                    visited[str[i]] = true;
+                    swap(str, index, i);
+                    g2(str, index+1, ans);
+                    swap(str, index, i);
+                }
+            }
+        }
+    }
+
+    public static void swap(char[] chs, int i, int j) {
+        char tmp = chs[i];
+        chs[i] = chs[j];
+        chs[j] = tmp;
+    }
+
+    public static void main(String[] args) {
+        String str = "acc";
+        List<String> ans1 = permutation1(str);
+        for(String cur : ans1){
+            System.out.println(cur);
+        }
+        System.out.println("=======");
+        List<String> ans2 = permutation2(str);
+        for (String c : ans2) {
+            System.out.println(c);
+        }
+        System.out.println("=======");
+        List<String> ans3 = permutation3(str);
+        for(String c: ans3){
+            System.out.println(c);
+        }
+    }
+}
+```
+
+
+
+#### （4）递归实现栈的反转
+
+**题目描述：**
+
+给你一个栈，请你逆序这个栈，
+不能申请额外的数据结构，
+只能使用递归函数。如何实现？
+
+```java
+package class18;
+
+import java.util.Stack;
+
+/*
+仰望好的尝试？
+给你一个栈，请你逆序这个栈，
+不能申请额外的数据结构，
+只能使用递归函数。如何实现？
+ */
+public class Code05_ReverseStackUsingRecursive {
+    public static void reverse(Stack<Integer> stack) {
+        if (stack.isEmpty()) {
+            return;
+        }
+        int i = f(stack);
+        reverse(stack);
+        stack.push(i);
+    }
+
+    // 栈底元素移除掉
+    // 上面的元素盖下来
+    // 返回移除掉的栈底元素
+    public static int f(Stack<Integer> stack) {
+        int result = stack.pop();
+        if (stack.isEmpty()) {
+            return result;
+        } else {
+            int last = f(stack);
+            stack.push(result);
+            return last;
+        }
+    }
+
+    public static void main(String[] args) {
+        Stack<Integer> test = new Stack<Integer>();
+        test.push(1);
+        test.push(2);
+        test.push(3);
+        test.push(4);
+        test.push(5);
+        reverse(test);
+        while (!test.isEmpty()) {
+            System.out.println(test.pop());
+        }
+
+    }
+}
+```
+
+
+
+### 2、基础DP
+
+#### （1）有边界的杨辉三角类型
+
+**题目描述：**
+
+假设有排成一行的N个位置，记为1~N,N一定大于或等于2
+开始时机器人在其中的M位置上(M一定是1~N中的一个)
+如果机器人来到1位置，那么下一步只能往右来到2位置；
+如果机器人来到N位置，那么下一步只能往左来到N-1位置；
+如果机器人来到中间位置，那么下一步可以往左走或者往右走；
+规定机器人必须走K步，最终能来到P位置(P也是1~N中的一个)的方法有多少种
+给定四个参数N、M、K、P,返回方法数。
+
+```java
+package class19;
+
+/*
+假设有排成一行的N个位置，记为1~N,N一定大于或等于2
+开始时机器人在其中的M位置上(M一定是1~N中的一个)
+如果机器人来到1位置，那么下一步只能往右来到2位置；
+如果机器人来到N位置，那么下一步只能往左来到N-1位置；
+如果机器人来到中间位置，那么下一步可以往左走或者往右走；
+规定机器人必须走K步，最终能来到P位置(P也是1~N中的一个)的方法有多少种
+给定四个参数N、M、K、P,返回方法数。
+* */
+public class Code01_RobotWalk {
+
+    public static int ways1(int N, int start, int aim, int K){
+        if (N < 2 || start <1 || start > N || aim <1 || aim > N || K<1){
+            return -1;
+        }
+        return process1(start, K, aim, N);
+    }
+
+    /*
+    * cur:机器人当前来到的位置是cur
+    * rest:机器人还有rest步需要走
+    * aim:最终的目标
+    * N:有哪些位置?1~N
+    * 返回：机器人从cur出发，走过rest步之后，最终停在aim的方法数是多少
+    * */
+    public static int process1(int cur, int rest, int aim, int N){
+        if(rest == 0) { //如果已经不需要走了，走完了
+            return cur == aim ? 1 : 0;
+        }
+        //rest > 0 ,还有步数需要走！
+        if (cur == 1){ //1~2
+            return process1(2,rest-1, aim, N);
+        }
+        if(cur == N){ //N-->N-1
+            return process1(N-1, rest-1, aim, N);
+        }
+        //中间位置
+        return process1(cur - 1, rest-1, aim, N) + process1(cur + 1, rest-1, aim, N);
+    }
+
+    //加缓存:自定向下dp(记忆化搜索)n
+    public static int ways2(int N, int start, int aim, int K){
+        if (N < 2 || start <1 || start > N || aim <1 || aim > N || K<1){
+            return -1;
+        }
+        /*
+         * dp是缓存表
+         * dp[cur][rest] == -1  表示process2(cur, rest)之前没有算过
+         * dp[cur][rest] != -1  表示process2(cur, rest)之前算过，返回值dp[cur][rest]
+         * */
+        int[][] dp = new int[N+1][K+1];
+        for (int i = 0; i <=N; i++) {
+            for(int j = 0; j <=K; j++){
+                dp[i][j] = -1;
+            }
+        }
+        return process2(start, K, aim, N, dp);
+    }
+
+    /*
+     * cur范围：1~N
+     * rest范围：0~K
+     * */
+    public static int process2(int cur, int rest, int aim, int N, int[][] dp){
+        //之前算过了
+        if (dp[cur][rest] != -1) return dp[cur][rest];
+        //之前没算过
+        int ans = 0;
+
+        if(rest == 0) { //如果已经不需要走了，走完了
+            ans = cur == aim ? 1 : 0;
+        }else if (cur == 1){ //1~2   //rest > 0 ,还有步数需要走！
+            ans = process2(2,rest-1, aim, N,dp);
+        }else if(cur == N){ //N-->N-1
+            ans = process2(N-1, rest-1, aim, N,dp);
+        }
+        else{
+            ans = process2(cur - 1, rest-1, aim, N, dp) + process2(cur + 1, rest-1, aim, N, dp);
+        }
+        dp[cur][rest] = ans;
+        return ans;
+    }
+
+    //加缓存:自定向下dp(记忆化搜索)n
+    public static int ways3(int N, int start, int aim, int K){
+        //最前面可以增加无效参数的检查
+        if (N < 2 || start <1 || start > N || aim <1 || aim > N || K<1){
+            return -1;
+        }
+        int[][] dp = new int[N+1][K+1];
+        dp[aim][0] = 1; //dp[...][0] = 0;
+
+        for(int rest = 1; rest <= K; rest++) { //列
+            dp[1][rest] = dp[2][rest-1]; //第一行,只依赖于左下角
+            for(int cur = 2; cur < N; cur++) {  //行
+                dp[cur][rest] = dp[cur-1][rest-1] + dp[cur+1][rest-1];
+            }
+            dp[N][rest] = dp[N-1][rest-1]; //最后一行，只依赖于左上角
+        }
+        return dp[start][K];
+    }
+
+    /*
+     * cur范围：1~N
+     * rest范围：0~K
+     * */
+    public static int process3(int cur, int rest, int aim, int N, int[][] dp){
+        //之前算过了
+        if (dp[cur][rest] != -1) return dp[cur][rest];
+        //之前没算过
+        int ans = 0;
+
+        if(rest == 0) { //如果已经不需要走了，走完了
+            ans = cur == aim ? 1 : 0;
+        }else if (cur == 1){ //1~2   //rest > 0 ,还有步数需要走！
+            ans = process2(2,rest-1, aim, N,dp);
+        }else if(cur == N){ //N-->N-1
+            ans = process2(N-1, rest-1, aim, N,dp);
+        }
+        else{
+            ans = process2(cur - 1, rest-1, aim, N, dp) + process2(cur + 1, rest-1, aim, N, dp);
+        }
+        dp[cur][rest] = ans;
+        return ans;
+    }
+
+
+    public static void main(String[] args) {
+        int ans1 = ways1(4, 2, 4, 4);
+        int ans2 = ways1(4, 2, 4, 4);
+        int ans3 = ways3(4, 2, 4, 4);
+        System.out.println(ans2);
+        System.out.println(ans3);
+    }
+}
+```
+
+#### （2）博弈论先后手型问题
+
+**题目描述：**
+
+给定一个整型数组arr,代表数值不同的纸牌排成一条线
+玩家A和玩家B依次拿走每张纸牌
+规定玩家A先拿，玩家B后拿
+但是每个玩家每次只能拿走最左或最右的纸牌
+玩家A和玩家B都绝顶聪明
+请返回最后获胜者的分数。
+
+```java
+package class19;
+
+/*
+给定一个整型数组arr,代表数值不同的纸牌排成一条线
+玩家A和玩家B依次拿走每张纸牌
+规定玩家A先拿，玩家B后拿
+但是每个玩家每次只能拿走最左或最右的纸牌
+玩家A和玩家B都绝顶聪明
+请返回最后获胜者的分数。
+* */
+public class Code02_CardsInLine {
+
+    //根据规则，返回获胜者的分数
+    public static int win1(int[] arr) {
+        if (arr == null || arr.length ==0) return 0;
+        int first  = f1(arr,0,arr.length-1);
+        int second  = g1(arr,0,arr.length-1);
+        return Math.max(first,second);
+    }
+
+    //arr[l,r],先手在[l, r]获得的最大分数
+    public static int f1(int[] arr, int l, int r){
+        if (l == r) return arr[l];
+        int p1 = arr[l] + g1(arr,l+1, r);
+        int p2 = arr[r] + g1(arr, l, r-1);
+        return Math.max(p1,p2);
+    }
+
+    ////arr[l,r],后手在[l, r]获得的最大分数
+    public static int g1(int[] arr, int l, int r){
+        if (l == r) return 0;   //只有最后一章牌了，你是后手，则得到0
+        //对方拿走了l位置的数
+        int p1 = f1(arr,l+1,r);
+        //对方拿走了r位置的数
+        int p2 = f1(arr,l,r-1);
+        return Math.min(p1,p2);
+    }
+
+    //根据规则，返回获胜者的分数
+    /*
+    f(0,7)
+    g(1,7)              g(0,6)
+    f(1,6) f(2,7)       f(0,5) f(1,6)
+    * */
+    public static int win2(int[] arr) {
+        if (arr == null || arr.length ==0) return 0;
+
+        int N = arr.length;
+        int[][] fmap = new int[N][N];
+        int[][] gmap = new int[N][N];
+
+        for(int i=0;i<N;i++){
+            for(int j=0;j<N;j++){
+                fmap[i][j]=-1;
+                gmap[i][j]=-1;
+            }
+        }
+        int first  = f2(arr,0,arr.length-1,fmap,gmap);
+        int second  = g2(arr,0,arr.length-1,fmap,gmap);
+        return Math.max(first,second);
+    }
+
+    //arr[l,r],先手在[l, r]获得的最大分数
+    public static int f2(int[] arr, int l, int r,int[][] fmap, int[][] gmap){
+        //如果已经求出了直接使用
+        if(fmap[l][r] != -1) return fmap[l][r];
+
+        //还没有求出
+        int ans = 0;
+        if (l == r) ans = arr[l];
+        else {
+            int p1 = arr[l] + g2(arr,l+1, r,fmap,gmap);
+            int p2 = arr[r] + g2(arr, l, r-1,fmap,gmap);
+            ans = Math.max(p1,p2);
+        }
+        fmap[l][r] = ans;
+        return ans;
+    }
+
+    ////arr[l,r],后手在[l, r]获得的最大分数
+    public static int g2(int[] arr, int l, int r,int[][] fmap, int[][] gmap){
+        if (gmap[l][r] != -1) return gmap[l][r];
+
+        int ans = 0;
+//        if (l == r) return 0;   //只有最后一章牌了，你是后手，则得到0
+        if (l != r){
+            //对方拿走了l位置的数
+            int p1 = f2(arr,l+1,r,fmap,gmap);
+            //对方拿走了r位置的数
+            int p2 = f2(arr,l,r-1,fmap,gmap);
+            ans = Math.min(p1,p2);
+        }
+        gmap[l][r] = ans;
+        return ans;
+    }
+
+    public static int win3(int[] arr) {
+        if (arr == null || arr.length ==0) return 0;
+
+        int N = arr.length;
+        int[][] fmap = new int[N][N];
+        int[][] gmap = new int[N][N];
+
+        //初始化fmap对角线,gmap对角线默认就是0不管
+        for(int i=0;i<N;i++){
+            fmap[i][i] = arr[i];
+        }
+
+        //右上三角
+        for(int startR = 1; startR < N; startR++) {  //列
+            int L = 0;
+            int R = startR;
+            //对角线填充
+            while(R < N) {
+                fmap[L][R] = Math.max(arr[L]+gmap[L+1][R],arr[R]+gmap[L][R-1]);
+                gmap[L][R] = Math.min(fmap[L+1][R],fmap[L][R-1]);
+                L ++;
+                R ++;
+            }
+        }
+        return Math.max(fmap[0][N-1],gmap[0][N-1]);
+    }
+
+
+    public static void main(String[] args) {
+        int[] arr = {1,100,1};
+        int result1 = win1(arr);
+        int result2 = win2(arr);
+        int result3 = win3(arr);
+        System.out.println(result3);
+    }
+}
+```
+
+#### （3）背包问题（从左往右类型）
+
+**01背包问题**
+
+```java
+package class20;
+
+/*
+* 背包问题
+* 从左往右
+* */
+public class Code01_Knapsack {
+
+    // 所有的货，重量和价值，都在w和v数组里
+    // 为了方便，其中没有负数
+    // rest背包容量，不能超过这个载重
+    // 返回：不超重的情况下，能够得到的最大价值
+    public static int maxValue (int[] w, int[] v, int rest) {
+        if (w == null || v == null || w.length != v.length || w.length ==0){
+            return 0;
+        }
+
+        //尝试函数
+        return process(w, v, 0, rest);
+    }
+
+    /*
+    * index之前的已经考虑过了，不再需要考虑，index之后的货物可以自由选择
+    * 做的选择不能超过背包最大容量
+    * 返回最大价值
+    * */
+    public static int process(int[] w, int[] v, int index, int rest){
+        if (rest < 0){
+//            return 0;
+            return -1;
+        }
+        if (index == w.length) return 0;
+
+        /*
+        目前还有货物，index位置的货物
+        rest有空间，0
+        不要当前的货物
+         */
+        int p1 = process(w,v,index+1,rest);
+
+        //要当前的货物
+//        intp2 = v[index] + process(w, v, index+1,rest - w[index]);
+        int p2 = 0;
+        int next = process(w, v, index+1,rest - w[index]);
+        if(next != -1){
+            //有效的时候再加
+            p2 = v[index] + next;
+        }
+        return Math.max(p1, p2);
+    }
+
+    /*
+     * index范围：0~N
+     * rest范围: 负数 ~ bag
+     * */
+    public static int dp (int[] w, int[] v, int bag) {
+        if (w == null || v == null || w.length != v.length || w.length ==0){
+            return 0;
+        }
+        int N = w.length;
+        //index 0~N
+        //rest 0~bag
+        int[][] dp = new int[N+1][bag+1];
+        //dp[N][0~N]=0  N行全0，数组默认全0
+        //从N-1行开始填dp,下往上
+        for(int index = N-1;index >=0; index--){
+            for(int rest = 0;rest <= bag; rest++){
+                //不选
+                int p1 = dp[index+1][rest];
+                //选择
+                int p2 = 0;
+//                int next = rest - w[index] <0 ? -1 : dp[index+1][rest-w[index]];
+                if(rest - w[index] >= 0){
+                    p2 = v[index] + dp[index+1][rest - w[index]];
+                }
+                dp[index][rest] = Math.max(p1, p2);
+            }
+        }
+        return dp[0][bag];
+    }
+
+    public static void main(String[] args) {
+        int[] weights = { 3, 2, 4, 7, 3, 1, 7 };
+        int[] values = { 5, 6, 3, 19, 12, 4, 2 };
+        int rest = 15;
+        System.out.println(maxValue(weights, values, rest));
+        System.out.println(dp(weights, values, rest));
+    }
+}
+```
+
+#### （4）字符串转化相关（从右向左类型）
+
+**题目描述：**
+
+规定1和A对应、2和B对应、3和C对应.......26和Z对应
+那么一个数字字符串比如"111”就可以转化为：
+"AAA"、"KA"和"AK"看成11+1
+给定一个只有数字字符组成的字符串str,返回有多少种转化结果
+
+```java
+package class20;
+
+/*
+规定1和A对应、2和B对应、3和C对应.......26和Z对应
+那么一个数字字符串比如"111”就可以转化为：
+"AAA"、"KA"和"AK"看成11+1
+给定一个只有数字字符组成的字符串str,返回有多少种转化结果
+* */
+public class Code02_ConvertToLetterString {
+    //str只含有数字字符0~9
+    // 返回多少种转化方案
+    public static int number(String str) {
+        if (str == null || str.length() ==0 ) return 0;
+        return process(str.toCharArray(),0);
+    }
+
+    //str[0.....i-1]转化不需要了解
+    //str[i,....]去转化，返回需要多少种转化方案
+    public static int process(char[] str, int u) {
+        //u到了最后一步了，前面u-1已经转化结束了，前面已经转化了，此时u结束，但是需要收集前面的结果
+        if (u == str.length) return 1;
+
+        //u没有到最后，说明有字符
+        if (str[u] == '0'){ //之前的决定有问题
+            return 0;
+        }
+
+        //str[u] != '0'
+        //(1) u位置单独转化
+        int ways = process(str, u+1);
+        //(2) u位置不能单独自己转化，需要和u+1一起转化
+        if (u+1 < str.length && (str[u]-'0') * 10 +str[u+1]-'0' < 27){
+            ways += process(str, u+2);
+        }
+        return ways;
+    }
+
+    public static int dp(String s) {
+        if (s == null || s.length() == 0) return 0;
+        char[] str = s.toCharArray();
+        int N = str.length;
+        int[] dp = new int[N+1];
+        dp[N] = 1;
+        for(int i = N-1; i >= 0; i--){
+            if (str[i] != '0'){
+                int ways = dp[i+1];
+                if (i+1 < str.length && (str[i]-'0') * 10 +str[i+1]-'0' < 27){
+                    ways += process(str, i+2);
+                }
+                dp[i] = ways;
+            }
+        }
+        return dp[0];
+    }
+
+    public static void main(String[] args) {
+        String str = "123455623";
+        System.out.println(dp(str));
+        System.out.println(number(str));
+    }
+}
+```
+
+  **题目描述：**
+
+给定一个字符串str,给定一个字符串类型的数组arr,出现的字符都是小写英文
+arr每一个字符串，代表一张贴纸，你可以把单个字符剪开使用，目的是拼出str来
+返回需要至少多少张贴纸可以完成这个任务。
+例子：str="babac'",arr={"ba","c","abcd"}
+至少需要两张贴纸"ba"和"abcd",因为使用这两张贴纸，把每一个字符单独剪开，含
+有2个a、2个b、1个c。是可以拼出str的。所以返回2。
+
+```java
+
+```
+
