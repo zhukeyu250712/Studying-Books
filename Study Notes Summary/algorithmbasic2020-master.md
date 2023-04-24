@@ -14,6 +14,8 @@
 
  因此，解决汉诺塔问题可设计一个递归函数，利用递归实现圆盘的整个移动过程，问题的解决过程是对实际操作的模拟。
 
+**题解：**
+
 ```java
 package class18;
 
@@ -199,6 +201,8 @@ public class Code02_Hanoi {
 打印一个字符串的全部子序列(可以不连续)
 打印一个字符串的全部子序列，要求不要出现重复字面值的子序列
 
+**题解：**
+
 ```java
 package class18;
 
@@ -290,6 +294,8 @@ public class Code03_PrintAllSubsquences {
 
 打印一个字符串的全排列
 打印一个字符串的全排列,要求不重复
+
+**题解：**
 
 ```java
 package class18;
@@ -417,6 +423,8 @@ public class Code04_PrintAllPermutations {
 不能申请额外的数据结构，
 只能使用递归函数。如何实现？
 
+**题解：**
+
 ```java
 package class18;
 
@@ -483,6 +491,8 @@ public class Code05_ReverseStackUsingRecursive {
 如果机器人来到中间位置，那么下一步可以往左走或者往右走；
 规定机器人必须走K步，最终能来到P位置(P也是1~N中的一个)的方法有多少种
 给定四个参数N、M、K、P,返回方法数。
+
+**题解：**
 
 ```java
 package class19;
@@ -624,7 +634,7 @@ public class Code01_RobotWalk {
 }
 ```
 
-#### （2）博弈论先后手型问题
+#### （2）博弈论先后手（范围题型）
 
 **题目描述：**
 
@@ -634,6 +644,8 @@ public class Code01_RobotWalk {
 但是每个玩家每次只能拿走最左或最右的纸牌
 玩家A和玩家B都绝顶聪明
 请返回最后获胜者的分数。
+
+**题解：**
 
 ```java
 package class19;
@@ -770,9 +782,11 @@ public class Code02_CardsInLine {
 }
 ```
 
-#### （3）背包问题（从左往右类型）
+#### （3）背包问题（从左往右题型）
 
 **01背包问题**
+
+**题解：**
 
 ```java
 package class20;
@@ -866,7 +880,7 @@ public class Code01_Knapsack {
 }
 ```
 
-#### （4）字符串转化相关（从右向左类型）
+#### （4）字符串转化相关（从右向左题型）
 
 **题目描述：**
 
@@ -874,6 +888,8 @@ public class Code01_Knapsack {
 那么一个数字字符串比如"111”就可以转化为：
 "AAA"、"KA"和"AK"看成11+1
 给定一个只有数字字符组成的字符串str,返回有多少种转化结果
+
+**题解：**
 
 ```java
 package class20;
@@ -939,7 +955,7 @@ public class Code02_ConvertToLetterString {
 }
 ```
 
-  **题目描述：**
+  **题目描述：Leetcode[691. 贴纸拼词](https://leetcode.cn/problems/stickers-to-spell-word/)**
 
 给定一个字符串str,给定一个字符串类型的数组arr,出现的字符都是小写英文
 arr每一个字符串，代表一张贴纸，你可以把单个字符剪开使用，目的是拼出str来
@@ -948,7 +964,349 @@ arr每一个字符串，代表一张贴纸，你可以把单个字符剪开使�
 至少需要两张贴纸"ba"和"abcd",因为使用这两张贴纸，把每一个字符单独剪开，含
 有2个a、2个b、1个c。是可以拼出str的。所以返回2。
 
+**题解：**
+
 ```java
+package class20;
+
+import sun.util.resources.cldr.zh.CalendarData_zh_Hans_HK;
+
+import java.util.HashMap;
+import java.util.stream.Stream;
+
+//测试链接（leetcode 691）：https://leetcode.cn/problems/stickers-to-spell-word/
+public class Code03_StickersToSpellWord {
+
+    public int minStickers(String[] stickers, String target) {
+        int  ans = process1(stickers,target);
+        return ans == Integer.MAX_VALUE ? -1 : ans;
+    }
+
+    //所有贴纸stickers,每种贴纸都有无穷张
+    //target
+    //return:最小张数
+    public static int process1(String[] stickers, String target) {
+        //边界，已经没有了，还需要0张
+        if (target.length() == 0) return 0;
+        int min = Integer.MAX_VALUE;
+        for(String first : stickers) {
+            //每张贴纸作为第一张，还能剩余的情况
+            String rest = minus(target, first);
+            //剪完first之后和原来字符串不一样
+            if(rest.length() != target.length()) {
+                min = Math.min(min, process1(stickers, rest));
+            }
+        }
+        // 1为first
+        return min + (min == Integer.MAX_VALUE ? 0 : 1);
+    }
+
+    public static String minus(String s1, String s2) {
+        char[] str1 = s1.toCharArray();
+        char[] str2 = s2.toCharArray();
+        int[] count = new int[26];
+        for (char cha : str1) {
+            count[cha - 'a']++;
+        }
+        for (char cha : str2) {
+            count[cha - 'a']--;
+        }
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 26; i++) {
+            if (count[i] > 0) {
+                for (int j = 0; j < count[i]; j++) {
+                    builder.append((char) (i + 'a'));
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+    public int minStickers2(String[] stickers, String target) {
+        int N = stickers.length;
+        //优化
+        int[][] counts = new int[N][26];
+        for(int i = 0; i < N; i++){
+            char[] str = stickers[i].toCharArray();
+            for(char cha : str){
+                counts[i][cha - 'a']++;
+            }
+        }
+        int ans = process2(counts, target);
+        return ans == Integer.MAX_VALUE ? -1 : ans;
+    }
+
+    // stickers[i] 数组，当初i号贴纸的字符统计 int[][] stickers -> 所有的贴纸
+    // 每一种贴纸都有无穷张
+    // 返回搞定target的最少张数
+    // 最少张数
+    public static int process2(int[][] stickers, String t) {
+        if (t.length() == 0) return 0;
+        //target做出词频统计
+        //target aabbc  2 2 1
+        //              0 1 2
+        char[] target  = t.toCharArray();
+        int[] tcounts = new int[26];
+        for(char cha : target){
+            tcounts[cha - 'a']++;
+        }
+        int N = stickers.length;
+        int min = Integer.MAX_VALUE;
+        for(int i = 0; i < N; i++){
+            //尝试第一张贴纸
+            int[] sticker = stickers[i];
+            //关键性优化：剪枝（贪心）
+            //看sticker里面是否存在target的第一个字符，有的化才执行逻辑操作
+            if(sticker[target[0] - 'a'] > 0) {
+                StringBuilder builder  = new StringBuilder();
+                for(int j = 0; j < 26; j++){
+                    if(tcounts[j] > 0){
+                        int sum = tcounts[j] - sticker[j];
+                        for(int k = 0; k < sum; k++){
+                            builder.append((char)(j + 'a'));
+                        }
+                    }
+                }
+                String rest = builder.toString();
+                min = Math.min(min, process2(stickers,rest));
+            }
+        }
+        return min + (min == Integer.MAX_VALUE ? 0 : 1);
+    }
+
+    public static int minStickers3(String[] stickers, String target) {
+        int N = stickers.length;
+        //优化
+        int[][] counts = new int[N][26];
+        for(int i = 0; i < N; i++){
+            char[] str = stickers[i].toCharArray();
+            for(char ch : str) {
+                counts[i][ch - 'a'] ++;
+            }
+        }
+        HashMap<String, Integer> dp = new HashMap<>();
+        dp.put("",0);
+        int ans = process3(counts, target, dp);
+        return ans == Integer.MAX_VALUE ? -1 : ans;
+    }
+
+    public static int process3(int[][] stickers, String t, HashMap<String, Integer> dp) {
+        if (dp.containsKey(t)){
+            return dp.get(t);
+        }
+        char[] target = t.toCharArray();
+        int[] tcounts = new int[26];
+        for(char cha : target) {
+            tcounts[cha - 'a'] ++;
+        }
+        int N = stickers.length;
+        int min = Integer.MAX_VALUE;
+        for(int i = 0; i < N; i++) {
+            int[] sticker = stickers[i];
+            if(sticker[target[0] - 'a'] > 0){
+                StringBuilder builder = new StringBuilder();
+                for(int j = 0; j < 26; j++) {
+                    if(tcounts[j] > 0){
+                        int sum = tcounts[j] - sticker[j];
+                        for(int k = 0; k < sum; k++){
+                            builder.append((char)(j + 'a'));
+                        }
+                    }
+                }
+                String rest = builder.toString();
+                min = Math.min(min, process3(stickers, rest, dp));
+            }
+        }
+        int ans = min + (min == Integer.MAX_VALUE ? 0 : 1);
+        dp.put(t,ans);
+        return ans;
+    }
+
+    public static void main(String[] args) {
+
+    }
+}
+```
+
+#### （5）最长公共子序列（样本对应题型）
+
+[Leetcode 1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
+
+给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。
+
+一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
+
+    例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。
+
+两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。
+
+**示例 1：**
 
 ```
+输入：text1 = "abcde", text2 = "ace" 
+输出：3  
+解释：最长公共子序列是 "ace" ，它的长度为 3 。
+```
+
+**示例 2：**
+
+```
+输入：text1 = "abc", text2 = "abc"
+输出：3
+解释：最长公共子序列是 "abc" ，它的长度为 3 。
+```
+
+**示例 3：**
+
+```
+输入：text1 = "abc", text2 = "def"
+输出：0
+解释：两个字符串没有公共子序列，返回 0 。
+```
+
+**提示：**
+
+$1 <= text1.length, text2.length <= 1000$,
+$text1$ 和 $text2$ 仅由小写英文字符组成。
+
+**题解：**
+
+```java
+package class20;
+
+public class Code04_LongestCommonSubsequence {
+    public int longestCommonSubsequence(String s1, String s2) {
+        if (s1.length() == 0 || s2.length() == 0 || s1 == null || s2 == null) return 0;
+        char[] str1 = s1.toCharArray();
+        char[] str2 = s2.toCharArray();
+        //尝试
+        return process1(str1, str2, str1.length - 1, str2.length - 1);
+    }
+
+    //str1[0....i]和str2[0....j]最长公共子序列最长
+    //返回
+    /*
+     str1[0...i]和str2[0...j]，这个范围上最长公共子序列长度是多少？
+     可能性分类:
+     a) 最长公共子序列，一定不以str1[i]字符结尾、也一定不以str2[j]字符结尾
+     b) 最长公共子序列，可能以str1[i]字符结尾、但是一定不以str2[j]字符结尾
+     c) 最长公共子序列，一定不以str1[i]字符结尾、但是可能以str2[j]字符结尾
+     d) 最长公共子序列，必须以str1[i]字符结尾、也必须以str2[j]字符结尾
+     注意：a)、b)、c)、d)并不是完全互斥的，他们可能会有重叠的情况
+     但是可以肯定，答案不会超过这四种可能性的范围
+     那么我们分别来看一下，这几种可能性怎么调用后续的递归。
+     a) 最长公共子序列，一定不以str1[i]字符结尾、也一定不以str2[j]字符结尾
+        如果是这种情况，那么有没有str1[i]和str2[j]就根本不重要了，因为这两个字符一定没用啊
+        所以砍掉这两个字符，最长公共子序列 = str1[0...i-1]与str2[0...j-1]的最长公共子序列长度(后续递归)
+     b) 最长公共子序列，可能以str1[i]字符结尾、但是一定不以str2[j]字符结尾
+        如果是这种情况，那么我们可以确定str2[j]一定没有用，要砍掉；但是str1[i]可能有用，所以要保留
+        所以，最长公共子序列 = str1[0...i]与str2[0...j-1]的最长公共子序列长度(后续递归)
+     c) 最长公共子序列，一定不以str1[i]字符结尾、但是可能以str2[j]字符结尾
+        跟上面分析过程类似，最长公共子序列 = str1[0...i-1]与str2[0...j]的最长公共子序列长度(后续递归)
+     d) 最长公共子序列，必须以str1[i]字符结尾、也必须以str2[j]字符结尾
+        同时可以看到，可能性d)存在的条件，一定是在str1[i] == str2[j]的情况下，才成立的
+        所以，最长公共子序列总长度 = str1[0...i-1]与str2[0...j-1]的最长公共子序列长度(后续递归) + 1(共同的结尾)
+     综上，四种情况已经穷尽了所有可能性。四种情况中取最大即可
+     其中b)、c)一定参与最大值的比较，
+     当str1[i] == str2[j]时，a)一定比d)小，所以d)参与
+     当str1[i] != str2[j]时，d)压根不存在，所以a)参与
+     但是再次注意了！
+     a)是：str1[0...i-1]与str2[0...j-1]的最长公共子序列长度
+     b)是：str1[0...i]与str2[0...j-1]的最长公共子序列长度
+     c)是：str1[0...i-1]与str2[0...j]的最长公共子序列长度
+     a)中str1的范围 < b)中str1的范围，a)中str2的范围 == b)中str2的范围
+     所以a)不用求也知道，它比不过b)啊，因为有一个样本的范围比b)小啊！
+     a)中str1的范围 == c)中str1的范围，a)中str2的范围 < c)中str2的范围
+     所以a)不用求也知道，它比不过c)啊，因为有一个样本的范围比c)小啊！
+     至此，可以知道，a)就是个垃圾，有它没它，都不影响最大值的决策
+     所以，当str1[i] == str2[j]时，b)、c)、d)中选出最大值
+     当str1[i] != str2[j]时，b)、c)中选出最大值
+    */
+    public static int process1(char[] str1, char[] str2, int i, int j) {
+        if (i == 0 && j == 0) {
+            // str1[0..0]和str2[0..0]，都只剩一个字符了
+            // 那如果字符相等，公共子序列长度就是1，不相等就是0
+            // 这显而易见
+            return str1[i] == str2[j] ? 1 : 0;
+        } else if (i == 0) { //str1[0...i = 0] 只有一个字符的时候
+            // 这里的情况为：
+            // str1[0...0]和str2[0...j]，str1只剩1个字符了，但是str2不只一个字符
+            // 因为str1只剩一个字符了，所以str1[0...0]和str2[0...j]公共子序列最多长度为1
+            // 如果str1[0] == str2[j]，那么此时相等已经找到了！公共子序列长度就是1，也不可能更大了
+            // 如果str1[0] != str2[j]，只是此时不相等而已，
+            // 那么str2[0...j-1]上有没有字符等于str1[0]呢？不知道，所以递归继续找
+            if (str1[i] == str2[j]) {
+                return 1;
+            } else {
+                return process1(str1, str2, i, j - 1);
+            }
+        } else if (j == 0) {
+            // 和上面的else if同理
+            // str1[0...i]和str2[0...0]，str2只剩1个字符了，但是str1不只一个字符
+            // 因为str2只剩一个字符了，所以str1[0...i]和str2[0...0]公共子序列最多长度为1
+            // 如果str1[i] == str2[0]，那么此时相等已经找到了！公共子序列长度就是1，也不可能更大了
+            // 如果str1[i] != str2[0]，只是此时不相等而已，
+            // 那么str1[0...i-1]上有没有字符等于str2[0]呢？不知道，所以递归继续找
+            if (str1[i] == str2[j]) {
+                return 1;
+            } else {
+                return process1(str1, str2, i - 1, j);
+            }
+        } else {  // i != 0 && j != 0
+            //不能以i结尾，可以j
+            // 这里的情况为：
+            // str1[0...i]和str2[0...i]，str1和str2都不只一个字符
+            // 看函数开始之前的注释部分
+            // p1就是可能性c)
+            int p1 = process1(str1, str2, i - 1, j);
+            //不能以j结尾，可以i
+            // p2就是可能性b)
+            int p2 = process1(str1, str2, i, j - 1);
+            //需要i结尾，j结尾
+            // p3就是可能性d)，如果可能性d)存在，即str1[i] == str2[j]，那么p3就求出来，参与pk
+            // 如果可能性d)不存在，即str1[i] != str2[j]，那么让p3等于0，然后去参与pk，反正不影响
+            int p3 = str1[i] == str2[j] ? (1 + process1(str1, str2, i - 1, j - 1)) : Integer.MIN_VALUE;
+            return Math.max(p1, Math.max(p2, p3));
+        }
+    }
+
+    public int longestCommonSubsequence2(String s1, String s2) {
+        if (s1.length() == 0 || s2.length() == 0 || s1 == null || s2 == null) return 0;
+        char[] str1 = s1.toCharArray();
+        char[] str2 = s2.toCharArray();
+        //尝试
+        int N = str1.length;
+        int M = str2.length;
+        int[][] dp = new int[N][M];
+        //递归里面的base case
+        dp[0][0] = str1[0] == str2[0] ? 1 : 0;
+        //0行
+        for(int j = 1; j < M; j++){
+            dp[0][j] = str1[0] == str2[j] ? 1 : dp[0][j-1];
+        }
+        //0列
+        for(int i = 1; i < N; i++){
+            dp[i][0] = str1[i] == str2[0] ? 1 : dp[i-1][0];
+        }
+        for(int i = 1; i < N; i++) {
+            for(int j = 1; j < M; j++){
+                //不能以i结尾，可以j
+                int p1 = dp[i - 1][j];
+                //不能以j结尾，可以i
+                int p2 = dp[i][j - 1];
+                //需要i结尾，j结尾
+                int p3 = str1[i] == str2[j] ? (1 + dp[i - 1][j - 1]) : 0;
+                dp[i][j] = Math.max(p1, Math.max(p2, p3));
+            }
+        }
+        return dp[N-1][M-1];
+    }
+}
+```
+
+
+
+#### （6）（业务限制题型）
+
+
 
