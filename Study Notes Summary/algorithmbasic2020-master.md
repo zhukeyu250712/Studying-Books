@@ -1304,6 +1304,146 @@ public class Code04_LongestCommonSubsequence {
 }
 ```
 
+#### **最长回文子序列**
+
+[516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)
+
+难度中等1010收藏分享切换为英文接收动态反馈
+
+给你一个字符串 s ，找出其中最长的回文子序列，并返回该序列的长度。
+
+子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
+
+**示例 1：**
+
+```
+输入：s = "bbbab"
+输出：4
+解释：一个可能的最长回文子序列为 "bbbb" 。
+```
+
+**示例 2：**
+
+```
+输入：s = "cbbd"
+输出：2
+解释：一个可能的最长回文子序列为 "bb" 。
+```
+
+**提示：**
+
+- `1 <= s.length <= 1000`
+- `s` 仅由小写英文字母组成
+
+**题解：**
+
+```java
+package class21;
+
+/*
+leetcode 516. 最长回文子序列
+给定一个字符串str,返回这个字符串的最长回文子序列长度
+比如：str=“a12b3c43def2ghi1kpm"
+最长回文子序列是“1234321”或者“123c321”，
+返回长度 7
+* */
+public class Code01_PalindromeSubsequence {
+    //1、一个字符串及其逆序串的最长公共子序列，就是原始字符串的最长回文子序列
+
+    public static int lpsl1(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        char[] str = s.toCharArray();
+        return f(str, 0, str.length - 1);
+    }
+
+    //str[L,R]最长回文子序列长度
+    public static int f(char[] str,int l, int r) {
+        //base case
+        if (l == r) return 1;
+        if ( l == r - 1){ //两个字符的情况
+            return str[l] == str[r] ? 2 : 1;
+        }
+        //1、l,r不包含
+        int p1 = f(str, l+1, r-1);
+        //2、l包含，不包含r
+        int p2 = f(str, l, r-1);
+        //3、l不包含，r包含
+        int p3 = f(str, l+1, r);
+        //4、l，r包含
+        int p4 =str[l] != str[r] ? 0 : ( 2 + f(str, l+1, r-1));
+        return Math.max(Math.max(p1,p2),Math.max(p3,p4));
+    }
+
+    public static int lpsl2(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        char[] str = s.toCharArray();
+        int N = str.length;
+        //L 0....N-1  行
+        //R 0....N-1  列
+        int[][] dp = new int[N][N];
+        //先填对角线的最后一个格子，方便下面填对角线及相邻对角线
+        dp[N-1][N-1] = 1;
+        for(int i = 0; i < N-1; i ++) {
+            dp[i][i] = 1;
+            //两个字符的情况str[l] == str[r-1]
+            dp[i][i+1] = str[i] == str[i+1] ? 2 : 1;
+        }
+        //上三角按照从下到上，从左向右顺序填，看f的几个依赖关系可以得到
+        //从N-3行填
+        for(int L = N-1; L >=0; L--) {
+            for(int R = L + 2; R < N; R++) {
+                //1、l,r不包含
+                int p1 = dp[L+1][R-1];
+                //2、l包含，不包含r
+                int p2 = dp[L][R-1];
+                //3、l不包含，r包含
+                int p3 = dp[L+1][R];
+                //4、l，r包含
+                int p4 =str[L] != str[R] ? 0 : ( 2 + dp[L+1][R-1]);
+                dp[L][R] = Math.max(Math.max(p1,p2),Math.max(p3,p4));
+            }
+        }
+        return dp[0][N-1];
+    }
+
+    public static int lpsl3(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        char[] str = s.toCharArray();
+        int N = str.length;
+        //L 0....N-1  行
+        //R 0....N-1  列
+        int[][] dp = new int[N][N];
+        //先填对角线的最后一个格子，方便下面填对角线及相邻对角线
+        dp[N-1][N-1] = 1;
+        for(int i = 0; i < N-1; i ++) {
+            dp[i][i] = 1;
+            //两个字符的情况str[l] == str[r-1]
+            dp[i][i+1] = str[i] == str[i+1] ? 2 : 1;
+        }
+        //上三角按照从下到上，从左向右顺序填，看f的几个依赖关系可以得到
+        //从N-3行填
+        for(int L = N-1; L >=0; L--) {
+            for(int R = L + 2; R < N; R++) {
+                //dp[L][R]的结果是取决于左边，左下，下面三个位置
+                // 可以发现，左边位置又依赖于左边位置的左边，左下，下面三个位置，则对于dp[L][R]左下可以不考虑，左边包含了
+                dp[L][R] = Math.max(dp[L][R-1],dp[L+1][R]); //求左边和下面
+                if (str[L] == str[R]) {  //可能性4存在
+                    dp[L][R] = Math.max(dp[L][R], 2 + dp[L+1][R-1]);
+                }
+            }
+        }
+        return dp[0][N-1];
+    }
+
+}
+```
+
 
 
 #### （6）（业务限制题型）
