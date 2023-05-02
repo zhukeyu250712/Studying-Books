@@ -634,7 +634,9 @@ public class Code01_RobotWalk {
 }
 ```
 
-#### （2）博弈论先后手（范围题型）
+#### （2）范围题型
+
+####   博弈论先后手
 
 **题目描述：**
 
@@ -782,9 +784,9 @@ public class Code02_CardsInLine {
 }
 ```
 
-#### （3）背包问题（从左往右题型）
+#### （3）从左往右题型
 
-**01背包问题**
+####   01背包问题
 
 **题解：**
 
@@ -880,7 +882,9 @@ public class Code01_Knapsack {
 }
 ```
 
-#### （4）字符串转化相关（从右向左题型）
+#### （4）从右向左题型
+
+#### 字符串转化相关
 
 **题目描述：**
 
@@ -1128,7 +1132,9 @@ public class Code03_StickersToSpellWord {
 }
 ```
 
-#### （5）最长公共子序列（样本对应题型）
+#### （5）样本对应题型
+
+#### 最长公共子序列
 
 [Leetcode 1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
 
@@ -1540,7 +1546,7 @@ public class Code02_HorseJump {
 
 
 
-#### （6）（业务限制题型）
+#### （6）业务限制题型
 
 #### 咖啡问题-京东面试
 
@@ -1787,6 +1793,119 @@ public class Code03_Coffee {
         }
         System.out.println("测试结束");
     }
+}
+```
+
+#### （7）数组压缩技巧-滚动数组
+
+#### 	最小路径和问题
+
+**题目：**
+
+```
+给定一个二维数组matrⅸ，一个人必须从左上角出发，最后到达右下角。
+沿途只可以向下或者向右走，沿途的数字都累加就是距离累加和。
+返回最小距离累加和
+```
+
+**解答:**
+
+```java
+package class21;
+
+/**
+ * 数组压缩技巧(滚动数组)：
+ * （1）只依赖左上角和上方（从右向左更新，从下向上更新）---如果从左向右，从上到下的话，第一行数据没法得到更新
+ * （2）只依赖左边和上方（从左向右，从上到下更新）---第一行的第一个位置可以当作左边，推导得到第一行
+ * （3）只依赖左边，左上角，上方（从左向右，从上到下）
+ * （4）N 行 M列的数组，4行100000000列的数组，则准备长度为4的数组
+
+ 给定一个二维数组matrⅸ，一个人必须从左上角出发，最后到达右下角。
+ 沿途只可以向下或者向右走，沿途的数字都累加就是距离累加和。
+ 返回最小距离累加和
+
+ 解答：
+ 定义dp[i][j]表示从(i,j)位置到达最下面的(n,m)的最小的值，则答案就是返回dp[0][0];
+ */
+public class Code01_MinPathSum {
+
+	public static int minPathSum1(int[][] m) {
+		if (m == null || m.length == 0 || m[0] == null || m[0].length == 0) {
+			return 0;
+		}
+		int row = m.length;
+		int col = m[0].length;
+		int[][] dp = new int[row][col];
+		dp[0][0] = m[0][0];
+		for (int i = 1; i < row; i++) {
+			dp[i][0] = dp[i - 1][0] + m[i][0];
+		}
+		for (int j = 1; j < col; j++) {
+			dp[0][j] = dp[0][j - 1] + m[0][j];
+		}
+		for (int i = 1; i < row; i++) {
+			for (int j = 1; j < col; j++) {
+				dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + m[i][j];
+			}
+		}
+		return dp[row - 1][col - 1];
+	}
+
+	public static int minPathSum2(int[][] m) {
+		if (m == null || m.length == 0 || m[0] == null || m[0].length == 0) {
+			return 0;
+		}
+		int row = m.length;
+		int col = m[0].length;
+		int[] dp = new int[col];
+		dp[0] = m[0][0];
+		//第一行的值
+		for (int j = 1; j < col; j++) {
+			dp[j] = dp[j - 1] + m[0][j];
+		}
+		for (int i = 1; i < row; i++) {
+			//每行的第一个位置，只取决于上一行的第一个位置的值
+			dp[0] += m[i][0];
+			for (int j = 1; j < col; j++) {
+				//此时dp[j]位置左边的dp[j-1]已经更新了,dp[j]还是上一行的值，没有更新
+				dp[j] = Math.min(dp[j - 1], dp[j]) + m[i][j];
+			}
+		}
+		return dp[col - 1];
+	}
+
+	// for test
+	public static int[][] generateRandomMatrix(int rowSize, int colSize) {
+		if (rowSize < 0 || colSize < 0) {
+			return null;
+		}
+		int[][] result = new int[rowSize][colSize];
+		for (int i = 0; i != result.length; i++) {
+			for (int j = 0; j != result[0].length; j++) {
+				result[i][j] = (int) (Math.random() * 100);
+			}
+		}
+		return result;
+	}
+
+	// for test
+	public static void printMatrix(int[][] matrix) {
+		for (int i = 0; i != matrix.length; i++) {
+			for (int j = 0; j != matrix[0].length; j++) {
+				System.out.print(matrix[i][j] + " ");
+			}
+			System.out.println();
+		}
+	}
+
+	public static void main(String[] args) {
+		int rowSize = 10;
+		int colSize = 10;
+		int[][] m = generateRandomMatrix(rowSize, colSize);
+		System.out.println(minPathSum1(m));
+		System.out.println(minPathSum2(m));
+
+	}
 }
 ```
 
