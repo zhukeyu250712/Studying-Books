@@ -8234,6 +8234,70 @@ public:
 
 
 
+#### [740. 删除并获得点数](https://leetcode.cn/problems/delete-and-earn/)
+
+给你一个整数数组 nums ，你可以对它进行一些操作。
+
+每次操作中，选择任意一个 nums[i] ，删除它并获得 nums[i] 的点数。之后，你必须删除 所有 等于 nums[i] - 1 和 nums[i] + 1 的元素。
+
+开始你拥有 0 个点数。返回你能通过这些操作获得的最大点数。
+
+**示例 1：**
+
+```
+输入：nums = [3,4,2]
+输出：6
+解释：
+删除 4 获得 4 个点数，因此 3 也被删除。
+之后，删除 2 获得 2 个点数。总共获得 6 个点数。
+```
+
+**示例 2：**
+
+```
+输入：nums = [2,2,3,3,3,4]
+输出：9
+解释：
+删除 3 获得 3 个点数，接着要删除两个 2 和 4 。
+之后，再次删除 3 获得 3 个点数，再次删除 3 获得 3 个点数。
+总共获得 9 个点数。
+```
+
+**提示：**
+
+- `1 <= nums.length <= 2 * 10^4`
+- `1 <= nums[i] <= 10^4`
+
+**c++代码实现：**
+
+```c
+const int N = 10010;
+int f[N],g[N];
+int cnt[N];
+
+class Solution {
+public:
+    int deleteAndEarn(vector<int>& nums) {
+        int n = nums.size();
+        memset(f, 0, sizeof(f));
+        memset(g, 0, sizeof(g));
+        memset(cnt, 0, sizeof(cnt));
+        int res = 0;
+        for(auto x: nums) cnt[x]++;
+        for(int i = 1; i < N; i++) {
+            //f[i]表示不选择i,那么i-1可以选择也可以不选择
+            f[i] = max(f[i-1], g[i-1]);
+            //g[i]表示选择i,那么i-1一定不能选择
+            g[i] = f[i-1] + i * cnt[i];
+            res = max(f[i],g[i]);
+        }
+        return res;
+    }
+};
+```
+
+
+
 #### [213. 打家劫舍 II](https://leetcode.cn/problems/house-robber-ii/)(状态机DP)
 
 你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 围成一圈 ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警 。
