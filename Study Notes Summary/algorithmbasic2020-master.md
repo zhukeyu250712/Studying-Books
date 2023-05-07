@@ -1796,7 +1796,7 @@ public class Code03_Coffee {
 }
 ```
 
-#### （7）数组压缩技巧-滚动数组
+#### （7）空间压缩技巧-滚动数组
 
 #### 	最小路径和问题
 
@@ -2150,6 +2150,284 @@ public class Code03_CoinsWayNoLimit {
 		}
 		System.out.println("测试结束");
 	}
+}
+```
+
+#### 货币问题3
+
+**题目：**
+
+```
+arr是货币数组，其中的值都是正数。再给定一个正数aim。
+每个值都认为是一张货币，
+认为值相同的货币没有任何不同，
+返回组成aim的方法数
+例如：arr={1,2,1,1,2,1,2,aim=4
+方法：1+1+1+1、1+1+2、2+2
+一共就3种方法，所以返回3
+```
+
+**解答：**
+
+```java
+package class22;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+/*
+arr是货币数组，其中的值都是正数。再给定一个正数aim。
+每个值都认为是一张货币，
+认为值相同的货币没有任何不同，
+返回组成aim的方法数
+例如：arr={1,2,1,1,2,1,2,aim=4
+方法：1+1+1+1、1+1+2、2+2
+一共就3种方法，所以返回3
+* */
+public class Code04_CoinsWaySameValueSamePapper {
+
+	public static class Info {
+		public int[] coins;
+		public int[] zhangs;
+
+		public Info(int[] c, int[] z) {
+			coins = c;
+			zhangs = z;
+		}
+	}
+
+	public static Info getInfo(int[] arr) {
+		HashMap<Integer, Integer> counts = new HashMap<>();
+		for (int value : arr) {
+			if (!counts.containsKey(value)) {
+				counts.put(value, 1);
+			} else {
+				counts.put(value, counts.get(value) + 1);
+			}
+		}
+		int N = counts.size();
+		int[] coins = new int[N];
+		int[] zhangs = new int[N];
+		int index = 0;
+		for (Entry<Integer, Integer> entry : counts.entrySet()) {
+			coins[index] = entry.getKey();
+			zhangs[index++] = entry.getValue();
+		}
+		return new Info(coins, zhangs);
+	}
+
+	public static int coinsWay(int[] arr, int aim) {
+		if (arr == null || arr.length == 0 || aim < 0) {
+			return 0;
+		}
+		Info info = getInfo(arr);
+		return process(info.coins, info.zhangs, 0, aim);
+	}
+
+	// coins 面值数组，正数且去重
+	// zhangs 每种面值对应的张数
+	//[2, 5, 10]
+	//[4, 6, 3]
+	public static int process(int[] coins, int[] zhangs, int index, int rest) {
+		if (index == coins.length) {
+			return rest == 0 ? 1 : 0;
+		}
+		int ways = 0;
+		for (int zhang = 0; zhang * coins[index] <= rest && zhang <= zhangs[index]; zhang++) {
+			ways += process(coins, zhangs, index + 1, rest - (zhang * coins[index]));
+		}
+		return ways;
+	}
+
+	public static int dp1(int[] arr, int aim) {
+		if (arr == null || arr.length == 0 || aim < 0) {
+			return 0;
+		}
+		Info info = getInfo(arr);
+		int[] coins = info.coins;
+		int[] zhangs = info.zhangs;
+		int N = coins.length;
+		int[][] dp = new int[N + 1][aim + 1];
+		//按照上面的递归版本填充递归边界,由于java初始化的时候默认为0,则dp[N][！0] = 0；
+		dp[N][0] = 1;
+		//从N - 1行开始
+		for (int index = N - 1; index >= 0; index--) {
+			//列
+			for (int rest = 0; rest <= aim; rest++) {
+				//做记忆化搜索
+				int ways = 0;
+				//两个限制条件,rest还没使用完以及张数还够
+				for (int zhang = 0; zhang * coins[index] <= rest && zhang <= zhangs[index]; zhang++) {
+					//依赖关系
+					ways += dp[index + 1][rest - (zhang * coins[index])];
+				}
+				dp[index][rest] = ways;
+			}
+		}
+		return dp[0][aim];
+	}
+
+	public static int dp2(int[] arr, int aim) {
+		if (arr == null || arr.length == 0 || aim < 0) {
+			return 0;
+		}
+		Info info = getInfo(arr);
+		int[] coins = info.coins;
+		int[] zhangs = info.zhangs;
+		int N = coins.length;
+		int[][] dp = new int[N + 1][aim + 1];
+		dp[N][0] = 1;
+		for (int index = N - 1; index >= 0; index--) {
+			for (int rest = 0; rest <= aim; rest++) {
+				//先获取index下面的一行对应的位置
+				dp[index][rest] = dp[index + 1][rest];
+				//index左边位置
+				if (rest - coins[index] >= 0) {
+					dp[index][rest] += dp[index][rest - coins[index]];
+				}
+				//减去index左边位置多加的数值
+				if (rest - coins[index] * (zhangs[index] + 1) >= 0) {
+					dp[index][rest] -= dp[index + 1][rest - coins[index] * (zhangs[index] + 1)];
+				}
+			}
+		}
+		return dp[0][aim];
+	}
+
+	// 为了测试
+	public static int[] randomArray(int maxLen, int maxValue) {
+		int N = (int) (Math.random() * maxLen);
+		int[] arr = new int[N];
+		for (int i = 0; i < N; i++) {
+			arr[i] = (int) (Math.random() * maxValue) + 1;
+		}
+		return arr;
+	}
+
+	// 为了测试
+	public static void printArray(int[] arr) {
+		for (int i = 0; i < arr.length; i++) {
+			System.out.print(arr[i] + " ");
+		}
+		System.out.println();
+	}
+
+	// 为了测试
+	public static void main(String[] args) {
+		int maxLen = 10;
+		int maxValue = 20;
+		int testTime = 1000000;
+		System.out.println("测试开始");
+		for (int i = 0; i < testTime; i++) {
+			int[] arr = randomArray(maxLen, maxValue);
+			int aim = (int) (Math.random() * maxValue);
+			int ans1 = coinsWay(arr, aim);
+			int ans2 = dp1(arr, aim);
+			int ans3 = dp2(arr, aim);
+			if (ans1 != ans2 || ans1 != ans3) {
+				System.out.println("Oops!");
+				printArray(arr);
+				System.out.println(aim);
+				System.out.println(ans1);
+				System.out.println(ans2);
+				System.out.println(ans3);
+				break;
+			}
+		}
+		System.out.println("测试结束");
+	}
+
+}
+```
+
+#### 马走日类型问题
+
+**题目：**
+
+```
+给定5个参数，N,M,row,col,k
+表示在N*M的区域上，醉汉Bob初始在(row,col)位置
+Bob一共要迈出k步，且每步都会等概率向上下左右四个方向走一个单位
+任何时候Bob只要离开N*M的区域，就直接死亡
+返回k步之后，Bob还在N*M的区域的概率
+```
+
+**解答：**
+
+```java
+package class22;
+
+/*
+给定5个参数，N,M,row,col,k
+表示在N*M的区域上，醉汉Bob初始在(row,col)位置
+Bob一共要迈出k步，且每步都会等概率向上下左右四个方向走一个单位
+任何时候Bob只要离开N*M的区域，就直接死亡
+返回k步之后，Bob还在N*M的区域的概率
+* */
+public class Code05_BobDie {
+
+	public static double livePosibility1(int row, int col, int k, int N, int M) {
+		return (double) process(row, col, k, N, M) / Math.pow(4, k);
+	}
+
+	// 目前在row，col位置，还有rest步要走，走完了如果还在棋盘中就获得1个生存点，返回总的生存点数
+	public static long process(int row, int col, int rest, int N, int M) {
+		//越界了
+		if (row < 0 || row == N || col < 0 || col == M) {
+			return 0;
+		}
+		// 还在棋盘中！
+		if (rest == 0) {
+			return 1;
+		}
+		// 还在棋盘中！还有步数要走
+		int ans = 0;
+		int[] dx = {-1,0,1,0};
+		int[] dy = {0,1,0,-1};
+		for(int i = 0; i < 4; i++) {
+			int a = row + dx[i], b = col + dy[i];
+			ans += process(a, b, rest - 1, N, M);
+		}
+		return ans;
+//		long up = process(row - 1, col, rest - 1, N, M);
+//		long down = process(row + 1, col, rest - 1, N, M);
+//		long left = process(row, col - 1, rest - 1, N, M);
+//		long right = process(row, col + 1, rest - 1, N, M);
+//		return up + down + left + right;
+	}
+
+	public static double livePosibility2(int row, int col, int k, int N, int M) {
+		long[][][] dp = new long[N][M][k + 1];
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < M; j++) {
+				dp[i][j][0] = 1;
+			}
+		}
+		for (int rest = 1; rest <= k; rest++) {
+			for (int r = 0; r < N; r++) {
+				for (int c = 0; c < M; c++) {
+					dp[r][c][rest] = pick(dp, N, M, r - 1, c, rest - 1);
+					dp[r][c][rest] += pick(dp, N, M, r + 1, c, rest - 1);
+					dp[r][c][rest] += pick(dp, N, M, r, c - 1, rest - 1);
+					dp[r][c][rest] += pick(dp, N, M, r, c + 1, rest - 1);
+				}
+			}
+		}
+		return (double) dp[row][col][k] / Math.pow(4, k);
+	}
+
+	public static long pick(long[][][] dp, int N, int M, int r, int c, int rest) {
+		if (r < 0 || r == N || c < 0 || c == M) {
+			return 0;
+		}
+		return dp[r][c][rest];
+	}
+
+	public static void main(String[] args) {
+		System.out.println(livePosibility1(6, 6, 10, 50, 50));
+		System.out.println(livePosibility2(6, 6, 10, 50, 50));
+	}
+
 }
 ```
 
