@@ -7537,115 +7537,7 @@ public:
 
 
 
-#### （3）DP理论
-
-#### [509. 斐波那契数](https://leetcode.cn/problems/fibonacci-number/)
-
-**斐波那契数** （通常用 `F(n)` 表示）形成的序列称为 **斐波那契数列** 。该数列由 `0` 和 `1` 开始，后面的每一项数字都是前面两项数字的和。也就是：
-
-```
-F(0) = 0，F(1) = 1
-F(n) = F(n - 1) + F(n - 2)，其中 n > 1
-```
-
-给定 `n` ，请计算 `F(n)` 。
-
-**示例 1：**
-
-```
-输入：n = 2
-输出：1
-解释：F(2) = F(1) + F(0) = 1 + 0 = 1
-```
-
-**示例 2：**
-
-```
-输入：n = 3
-输出：2
-解释：F(3) = F(2) + F(1) = 1 + 1 = 2
-```
-
-**示例 3：**
-
-```
-输入：n = 4
-输出：3
-解释：F(4) = F(3) + F(2) = 2 + 1 = 3
-```
-
-**提示：**
-
-- `0 <= n <= 30`
-
-**c++代码实现：**
-
-```c
-class Solution {
-public:
-    int fib(int n) {
-        int a=0,b=1;
-        while(n--){
-            int c=a+b;
-            a=b,b=c;
-        }
-        return a;
-    }
-};
-```
-
-#### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
-
-假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
-
-每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
-
-**示例 1：**
-
-```
-输入：n = 2
-输出：2
-解释：有两种方法可以爬到楼顶。
-1. 1 阶 + 1 阶
-2. 2 阶
-```
-
-**示例 2：**
-
-```
-输入：n = 3
-输出：3
-解释：有三种方法可以爬到楼顶。
-1. 1 阶 + 1 阶 + 1 阶
-2. 1 阶 + 2 阶
-3. 2 阶 + 1 阶
-```
-
-**提示：**
-
-- `1 <= n <= 45`
-
-**c++代码实现：**
-
-```c
-class Solution {
-public:
-    int climbStairs(int n) {
-        int a=1,b=1;
-        //执行n-1次
-        /*
-        a b c 
-          a b c
-        1 1 2 3 5 8 13 21 34...
-        */
-        while(--n){
-            int c=a+b;
-            a=b,b=c;
-        }
-        return b;
-    }
-};
-```
+#### （3）数字三角形
 
 #### [62. 不同路径](https://leetcode.cn/problems/unique-paths/)
 
@@ -7785,6 +7677,8 @@ public:
     }
 };
 ```
+
+
 
 #### [980. 不同路径 III](https://leetcode.cn/problems/unique-paths-iii/)（连通性DP-插头DP）
 
@@ -7932,6 +7826,67 @@ public:
 };
 ```
 
+
+
+#### [931. 下降路径最小和](https://leetcode.cn/problems/minimum-falling-path-sum/)
+
+给你一个 n x n 的 方形 整数数组 matrix ，请你找出并返回通过 matrix 的下降路径 的 最小和 。
+
+下降路径 可以从第一行中的任何元素开始，并从每一行中选择一个元素。在下一行选择的元素和当前行所选元素最多相隔一列（即位于正下方或者沿对角线向左或者向右的第一个元素）。具体来说，位置 (row, col) 的下一个元素应当是 (row + 1, col - 1)、(row + 1, col) 或者 (row + 1, col + 1) 。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2021/11/03/failing1-grid.jpg)
+
+
+
+```
+输入：matrix = [[2,1,3],[6,5,4],[7,8,9]]
+输出：13
+解释：如图所示，为和最小的两条下降路径
+```
+
+**示例 2：**
+
+```
+输入：matrix = [[-19,57],[-40,-5]]
+输出：-59
+解释：如图所示，为和最小的下降路径
+```
+
+![](https://assets.leetcode.com/uploads/2021/11/03/failing2-grid.jpg)
+
+**提示：**
+
+$n == matrix.length == matrix[i].length$,
+$1 <= n <= 100$,
+$-100 <= matrix[i][j] <= 100$
+
+**c++代码实现：**
+
+```c
+class Solution {
+public:
+    int minFallingPathSum(vector<vector<int>>& g) {
+        int n = g.size();
+        vector<vector<int>> dp(n,vector<int>(n,1e8));
+        for(int i = 0; i < n; i++) dp[0][i] = g[0][i];
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                for(int  k = max(0,j-1); k <= min(n-1,j+1); k++) {
+                    dp[i][j] = min(dp[i][j], dp[i-1][k] + g[i][j]);
+                }
+            }
+        }
+        int res = 1e8;
+        for(int i = 0; i < n; i++) res = min(res,dp[n-1][i]);
+        return res;
+    }
+};
+```
+
+
+
 #### [343. 整数拆分](https://leetcode.cn/problems/integer-break/)
 
 给定一个正整数 `n` ，将其拆分为 `k` 个 **正整数** 的和（ `k >= 2` ），并使这些整数的乘积最大化。
@@ -7982,7 +7937,115 @@ public:
 };
 ```
 
+#### [509. 斐波那契数](https://leetcode.cn/problems/fibonacci-number/)
 
+**斐波那契数** （通常用 `F(n)` 表示）形成的序列称为 **斐波那契数列** 。该数列由 `0` 和 `1` 开始，后面的每一项数字都是前面两项数字的和。也就是：
+
+```
+F(0) = 0，F(1) = 1
+F(n) = F(n - 1) + F(n - 2)，其中 n > 1
+```
+
+给定 `n` ，请计算 `F(n)` 。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：1
+解释：F(2) = F(1) + F(0) = 1 + 0 = 1
+```
+
+**示例 2：**
+
+```
+输入：n = 3
+输出：2
+解释：F(3) = F(2) + F(1) = 1 + 1 = 2
+```
+
+**示例 3：**
+
+```
+输入：n = 4
+输出：3
+解释：F(4) = F(3) + F(2) = 2 + 1 = 3
+```
+
+**提示：**
+
+- `0 <= n <= 30`
+
+**c++代码实现：**
+
+```c
+class Solution {
+public:
+    int fib(int n) {
+        int a=0,b=1;
+        while(n--){
+            int c=a+b;
+            a=b,b=c;
+        }
+        return a;
+    }
+};
+```
+
+#### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
+
+每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：2
+解释：有两种方法可以爬到楼顶。
+1. 1 阶 + 1 阶
+2. 2 阶
+```
+
+**示例 2：**
+
+```
+输入：n = 3
+输出：3
+解释：有三种方法可以爬到楼顶。
+1. 1 阶 + 1 阶 + 1 阶
+2. 1 阶 + 2 阶
+3. 2 阶 + 1 阶
+```
+
+**提示：**
+
+- `1 <= n <= 45`
+
+**c++代码实现：**
+
+```c
+class Solution {
+public:
+    int climbStairs(int n) {
+        int a=1,b=1;
+        //执行n-1次
+        /*
+        a b c 
+          a b c
+        1 1 2 3 5 8 13 21 34...
+        */
+        while(--n){
+            int c=a+b;
+            a=b,b=c;
+        }
+        return b;
+    }
+};
+```
+
+#### 
 
 #### [799. 香槟塔](https://leetcode.cn/problems/champagne-tower/)
 
