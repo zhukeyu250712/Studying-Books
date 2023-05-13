@@ -2433,7 +2433,7 @@ public class Code05_BobDie {
 
 #### （8）斜率优化
 
-#### 字节面试题目
+#### 字节面试题目-样本对应模型
 
 **题目：**
 
@@ -2503,6 +2503,7 @@ public class Code01_KillMonster {
         long all = (long) Math.pow(M + 1, K);
         //小标从0开始
         long[][] dp = new long[K+1][N+1];
+        //特别注意：dp[0][j]既表示原含义，也表示M+1的 j 次方的值
         dp[0][0] = 1; //dp[0][非0] = 0；
         for(int times = 1; times <= K; times++) {
             //第0列 : 当刀数为负数的时候，还剩余的kills的点数
@@ -2592,6 +2593,319 @@ public class Code01_KillMonster {
             }
         }
         System.out.println("测试结束");
+    }
+}
+```
+
+
+
+#### 货币问题4
+
+**题目：**
+
+```
+ arr是面值数组，其中的值都是正数且没有重复。再给定一个正数aim。
+ 每个值都认为是一种面值，且认为张数是无限的。
+ 返回组成aim的最少货币数
+```
+
+**解答：**
+
+```java
+package class23;
+
+/**
+ * arr是面值数组，其中的值都是正数且没有重复。再给定一个正数aim。
+ * 每个值都认为是一种面值，且认为张数是无限的。
+ * 返回组成aim的最少货币数
+ */
+public class Code02_MinCoinsNoLimit {
+    public static int minCoins(int[] arr, int aim) {
+        return process(arr, 0, aim);
+    }
+
+    /**
+     *
+     * @param arr :arr[index]面值，每种面值张数自由选择
+     * @param index ： 位置
+     * @param rest : 凑出rest正好这么多钱，返回最小张数
+     * @return
+     */
+    public static int process(int[] arr, int index, int rest) {
+        if(rest < 0) {
+            return Integer.MAX_VALUE;
+        }
+        if(index == arr.length) {
+            //rest为0，位置没有了,则需要的答案为0
+            return rest == 0 ? 0 : Integer.MAX_VALUE;
+        } else {
+            int ans = Integer.MAX_VALUE;
+            for (int zhang = 0; zhang * arr[index] <= rest; zhang++) {
+                int next = process(arr,index + 1, rest - zhang * arr[index]);
+                if(next != Integer.MAX_VALUE) {
+                    ans = Math.min(ans, next + zhang);
+                }
+            }
+            return ans;
+        }
+    }
+
+    public static int dp1(int[] arr,int aim) {
+        if(aim == 0) {
+            return 0;
+        }
+        int N = arr.length;
+        //rest范围从0 ~ aim+1
+        //index 从 0 ~ N+1
+        int[][] dp = new int[N+1][aim +1];
+        dp[N][0] = 0;
+        for(int j = 1; j <= aim; j++) {
+            dp[N][j] = Integer.MAX_VALUE;
+        }
+        for(int index = N - 1; index >= 0; index--) {
+            for(int rest = 0; rest <= aim; rest++) {
+                int ans = Integer.MAX_VALUE;
+                for (int zhang = 0; zhang * arr[index] <= rest; zhang++) {
+                    //next表示rest还需要多少的张数
+                    int next = dp[index + 1][rest - zhang * arr[index]];
+                    if(next != Integer.MAX_VALUE) {
+                        //最后更新答案的时候需要加上zhang
+                        ans = Math.min(ans, next + zhang);
+                    }
+                }
+                dp[index][rest] = ans;
+            }
+        }
+        return dp[0][aim];
+    }
+
+    public static int dp2(int[] arr,int aim) {
+        if(aim == 0) {
+            return 0;
+        }
+        int N = arr.length;
+        //rest范围从0 ~ aim+1
+        //index 从 0 ~ N+1
+        int[][] dp = new int[N+1][aim +1];
+        dp[N][0] = 0;
+        for(int j = 1; j <= aim; j++) {
+            dp[N][j] = Integer.MAX_VALUE;
+        }
+        for(int index = N - 1; index >= 0; index--) {
+            for(int rest = 0; rest <= aim; rest++) {
+                //rest下面的格子
+                dp[index][rest] = dp[index+1][rest];
+                //rest - arr[index] >= 0不越界
+                //并且对应的位置的数值是有效值
+                if(rest - arr[index] >= 0 && dp[index][rest - arr[index]] != Integer.MAX_VALUE) {
+                    dp[index][rest] = Math.min(dp[index][rest],dp[index][rest - arr[index]]+1);
+                }
+            }
+        }
+        return dp[0][aim];
+    }
+
+    // 为了测试
+    public static int[] randomArray(int maxLen, int maxValue) {
+        int N = (int) (Math.random() * maxLen);
+        int[] arr = new int[N];
+        boolean[] has = new boolean[maxValue + 1];
+        for (int i = 0; i < N; i++) {
+            do {
+                arr[i] = (int) (Math.random() * maxValue) + 1;
+            } while (has[arr[i]]);
+            has[arr[i]] = true;
+        }
+        return arr;
+    }
+
+    // 为了测试
+    public static void printArray(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + " ");
+        }
+        System.out.println();
+    }
+
+    // 为了测试
+    public static void main(String[] args) {
+        int maxLen = 20;
+        int maxValue = 30;
+        int testTime = 300000;
+        System.out.println("功能测试开始");
+        for (int i = 0; i < testTime; i++) {
+            int N = (int) (Math.random() * maxLen);
+            int[] arr = randomArray(N, maxValue);
+            int aim = (int) (Math.random() * maxValue);
+            int ans1 = minCoins(arr, aim);
+            int ans2 = dp1(arr, aim);
+            int ans3 = dp2(arr, aim);
+            if (ans1 != ans2 || ans1 != ans3) {
+                System.out.println("Oops!");
+                printArray(arr);
+                System.out.println(aim);
+                System.out.println(ans1);
+                System.out.println(ans2);
+                break;
+            }
+        }
+        System.out.println("功能测试结束");
+    }
+}
+```
+
+
+
+#### 数的划分
+
+**题目：**
+
+```
+给定不正数1，裂开的方法有一种，(1)
+给定一个正数2，裂开的方法有两种，(1和1)、(2)
+给定一个正数3，裂开的方法有三种，(1、1、1)、(1、2)、(3)
+给定一个正数4，裂开的方法有五种，(1、1、1、1)、(1、1、2)、(1、3)、(2、2)、(4)
+给定一个正数，求裂开的方法数,拆分数，满足构成该数的序列是递增的序列。
+动态规划优化状态依赖的技巧
+```
+
+**解答：**
+
+```java
+package class23;
+/*
+给定不正数1，裂开的方法有一种，(1)
+给定一个正数2，裂开的方法有两种，(1和1)、(2)
+给定一个正数3，裂开的方法有三种，(1、1、1)、(1、2)、(3)
+给定一个正数4，裂开的方法有五种，(1、1、1、1)、(1、1、2)、(1、3)、(2、2)、(4)
+给定一个正数，求裂开的方法数,拆分数，满足构成该数的序列是递增的序列。
+动态规划优化状态依赖的技巧
+eg1:
+  3 = 1 + 1 + 1
+    = 1 + 2
+    = 3
+  ！= 2 +1
+
+eg2:
+  5 = process(1, 4)
+    = process(2, 3)
+    = process(3, 2)    3 > 2 不满足题目意思
+    = process(4, 1)    4 > 1 不满足题目意思
+    = process(5, 0)    5 > 0 满足题目意思  或者这是特殊情况，如果不再划分了，那么(pre,0)也是合法的
+
+eg3:
+  6 = process(1, 5)
+    = process(2, 4)
+    = process(3, 3)    3 == 3 满足题目意思,一种方法
+    = process(4, 2)    4 > 2 不满足题目意思
+    = process(5, 1)    5 > 1 不满足题目意思
+    = process(6, 0)    6 > 0 满足题目意思  或者这是特殊情况，如果不再划分了，那么(pre,0)也是合法的
+
+* */
+public class Code03_SplitNumber {
+
+    //n 为正数
+    public static int ways(int n) {
+        if (n < 0) {
+            return 0;
+        }
+        if( n == 1) {
+            return 1;
+        }
+        return process(1, n);
+    }
+
+    /**
+     *
+     * @param pre 上一个拆出来的数是pre
+     * @param rest 还剩余rest需要的拆
+     * @return  返回拆解的方法数
+     */
+    public static int process(int pre, int rest) {
+//        if(pre == rest) return 1;
+        if(rest == 0) return 1;
+        if(pre > rest) return 0;
+        // pre < rest
+        int ways = 0;
+
+        for (int first = pre; first <= rest; first++) {
+            ways += process(first,rest - first);
+        }
+
+//        for (int first = pre; first < rest; first++) {
+//            ways += process(first,rest - first);
+//        }
+//        ways ++;
+
+        return ways;
+    }
+
+    public static int dp1(int n) {
+        if (n < 0) {
+            return 0;
+        }
+        if( n == 1) {
+            return 1;
+        }
+        // pre: 1 ~ n
+        // rest: 0 ~ n
+        int[][] dp = new int[n+1][n+1];
+
+        //(1) if(rest == 0) return 1;
+        //(2)对角线为1，（1，1），（2，2），（3，3），（4，4）.....
+        for (int pre = 1; pre <= n; pre++) {
+            dp[pre][0] = 1;
+            dp[pre][pre] = 1;
+        }
+
+        //第一行不需要填
+        for(int pre = n-1; pre >= 1; pre--) {
+            //对角线已经填了
+            for(int rest = pre + 1; rest <= n; rest++) {
+                int ways = 0;
+                for (int first = pre; first <= rest; first++) {
+                    ways += dp[first][rest - first];
+                }
+                dp[pre][rest] = ways;
+            }
+        }
+        return dp[1][n];
+    }
+
+    public static int dp2(int n) {
+        if (n < 0) {
+            return 0;
+        }
+        if( n == 1) {
+            return 1;
+        }
+        // pre: 1 ~ n
+        // rest: 0 ~ n
+        int[][] dp = new int[n+1][n+1];
+
+        //(1) if(rest == 0) return 1;
+        //(2)对角线为1，（1，1），（2，2），（3，3），（4，4）.....
+        for (int pre = 1; pre <= n; pre++) {
+            dp[pre][0] = 1;
+            dp[pre][pre] = 1;
+        }
+
+        //第一行不需要填
+        for(int pre = n-1; pre >= 1; pre--) {
+            //对角线已经填了
+            for(int rest = pre + 1; rest <= n; rest++) {
+                dp[pre][rest] = dp[rest+1][rest];
+                dp[pre][rest] += dp[pre][rest-pre];
+            }
+        }
+        return dp[1][n];
+    }
+
+    public static void main(String[] args) {
+        int test = 39;
+        System.out.println(ways(test));
+        System.out.println(dp1(test));
+        System.out.println(dp2(test));
     }
 }
 ```
