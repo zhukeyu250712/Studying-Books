@@ -1,5 +1,48 @@
 ## DP
 
+```
+面试中设计暴力递归过程的原则
+1) 每一个可变参数的类型，一定不要比int类型更加复杂
+2) 原则1)可以违反，让类型突破到一维线性结构，那必须是单一可变参数
+3) 如果发现原则1)被违反，但不违反原则2)，只需要做到记忆化搜索即可(leetcde贴纸问题)
+4) 可变参数的个数，能少则少
+```
+
+```
+知道了面试中设计暴力递归过程的原则，然后呢？
+一定要逼自己找到不违反原则情况下的暴力尝试！
+如果你找到的暴力尝试，不符合原则，马上舍弃！找新的！
+如果某个题目突破了设计原则，一定极难极难，面试中出现概率低于5%！
+```
+
+```
+常见的4种尝试模型
+1)从左往右的尝试模型
+2)范围上的尝试模型
+3)多样本位置全对应的尝试模型
+4)寻找业务限制的尝试模型
+```
+
+```
+暴力递归到动态规划的套路
+1) 你已经有了一个不违反原则的暴力递归，而且的确存在解的重复调用
+2) 找到哪些参数的变化会影响返回值，对每一个列出变化范围
+3) 参数间的所有的组合数量，意味着表大小
+4) 记忆化搜索的方法就是傻缓存，非常容易得到
+5) 规定好严格表的大小，分析位置的依赖顺序，然后从基础填写到最终解
+6) 对于有枚举行为的决策过程，进一步优化
+```
+
+```
+动态规划的进一步优化
+1) 空间压缩
+2) 状态化简
+3) 四边形不等式
+4) 其他优化技巧
+```
+
+
+
 ### 1、经典递归
 
 #### （1）汉诺塔问题
@@ -959,7 +1002,11 @@ public class Code02_ConvertToLetterString {
 }
 ```
 
-  **题目描述：Leetcode[691. 贴纸拼词](https://leetcode.cn/problems/stickers-to-spell-word/)**
+
+
+#### 贴纸问题  （记忆化搜索）
+
+**题目描述：Leetcode[691. 贴纸拼词](https://leetcode.cn/problems/stickers-to-spell-word/)**
 
 给定一个字符串str,给定一个字符串类型的数组arr,出现的字符都是小写英文
 arr每一个字符串，代表一张贴纸，你可以把单个字符剪开使用，目的是拼出str来
@@ -1909,7 +1956,7 @@ public class Code01_MinPathSum {
 }
 ```
 
-#### 货币问题1
+#### 货币问题1（货币不重复，数量有限）
 
 **题目：**
 
@@ -2015,7 +2062,7 @@ public class Code02_CoinsWayEveryPaperDifferent {
 }
 ```
 
-#### 货币问题2
+#### 货币问题2（货币不重复，数量无限）
 
 **题目：**
 
@@ -2153,7 +2200,7 @@ public class Code03_CoinsWayNoLimit {
 }
 ```
 
-#### 货币问题3
+#### 货币问题3（货币重复，数量有限）
 
 **题目：**
 
@@ -2162,7 +2209,7 @@ arr是货币数组，其中的值都是正数。再给定一个正数aim。
 每个值都认为是一张货币，
 认为值相同的货币没有任何不同，
 返回组成aim的方法数
-例如：arr={1,2,1,1,2,1,2,aim=4
+例如：arr={1,2,1,1,2,1,2},aim=4
 方法：1+1+1+1、1+1+2、2+2
 一共就3种方法，所以返回3
 ```
@@ -2599,7 +2646,7 @@ public class Code01_KillMonster {
 
 
 
-#### 货币问题4
+#### 货币问题4（货币不重复，数量无线，数量最少）
 
 **题目：**
 
@@ -2910,3 +2957,345 @@ public class Code03_SplitNumber {
 }
 ```
 
+
+
+#### 划分两个集合，使得集合和相近
+
+**题目：**
+
+```
+  给定一个正数数组arr,
+  请把arr中所有的数分成两个集合，尽量让两个集合的累加和接近
+  返回：
+  最接近的情况下，较小集合的累加和
+```
+
+**解答：**
+
+```java
+package class24;
+
+/**
+ * 给定一个正数数组arr,
+ * 请把arr中所有的数分成两个集合，尽量让两个集合的累加和接近
+ * 返回：
+ * 最接近的情况下，较小集合的累加和
+ */
+public class Code01_SplitSumClosed {
+    public static int right(int[] arr) {
+        if(arr == null || arr.length < 2) {
+            return 0;
+        }
+        int sum  = 0;
+        for(int num : arr) {
+            sum += num;
+        }
+        return process(arr, 0, sum >> 1);
+    }
+
+    /**
+     * @param arr
+     * @param u    arr[u....]可以自由选择
+     * @param rest
+     * @return 返回尽量接近rest，但是不能超过rest的情况下，最接近的累加和是多少
+     */
+    public static int process(int[] arr, int u, int rest) {
+        if (u == arr.length) {
+            return 0;
+        }else { //还有数，arr[u]这个数
+            //（1）不使用arr[u]
+            int p1 = process(arr,u+1,rest);
+            //（2）使用arr[u]
+            int p2 = 0;
+            if(arr[u] <= rest){
+                //需要加上arr[u]
+                p2 =arr[u] + process(arr,u+1,rest - arr[u]);
+            }
+            return Math.max(p1, p2);
+        }
+    }
+
+    public static int dp(int[] arr) {
+        if(arr == null || arr.length < 2) {
+            return 0;
+        }
+        int N = arr.length;
+        int sum = 0;
+        for(int item : arr) {
+            sum += item;
+        }
+        sum /= 2;
+        //这里都需要多开一个位置 0
+        int[][] dp = new int[N+1][sum+1];
+        //dp[N][....] = 0
+        for(int i = N-1; i >= 0; i--) {
+            for(int rest = sum; rest >= 0; rest--) {
+                //（1）不使用arr[u]
+                int p1 = dp[i+1][rest];
+                //（2）使用arr[u]
+                int p2 = 0;
+                if(arr[i] <= rest){
+                    //需要加上arr[u]
+                    p2 =arr[i] + dp[i+1][rest - arr[i]];
+                }
+                dp[i][rest] = Math.max(p1, p2);
+            }
+        }
+        return dp[0][sum];
+    }
+
+    public static int[] randomArray(int len, int value) {
+        int[] arr = new int[len];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (int) (Math.random() * value);
+        }
+        return arr;
+    }
+
+    public static void printArray(int[] arr) {
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        int maxLen = 20;
+        int maxValue = 50;
+        int testTime = 10000;
+        System.out.println("测试开始");
+        for (int i = 0; i < testTime; i++) {
+            int len = (int) (Math.random() * maxLen);
+            int[] arr = randomArray(len, maxValue);
+            int ans1 = right(arr);
+            int ans2 = dp(arr);
+            if (ans1 != ans2) {
+                printArray(arr);
+                System.out.println(ans1);
+                System.out.println(ans2);
+                System.out.println("Oops!");
+                break;
+            }
+        }
+        System.out.println("测试结束");
+    }
+}
+```
+
+
+
+#### 考虑长度奇偶的划分集合-字节面试
+
+**题目：**
+
+```
+  字节面试题目：
+  给定一个正数数组arr,请把arr中所有的数分成两个集合
+  如果arr长度为偶数，两个集合包含数的个数要一样多
+  如果arr长度为奇数，两个集合包含数的个数必须只差一个
+  请尽量让两个集合的累加和接近
+  返回：
+  最接近的情况下，较小集合的累加和
+```
+
+**解答：**
+
+```java
+package class24;
+
+/**
+ * 字节面试题目：
+ * 给定一个正数数组arr,请把arr中所有的数分成两个集合
+ * 如果arr长度为偶数，两个集合包含数的个数要一样多
+ * 如果arr长度为奇数，两个集合包含数的个数必须只差一个
+ * 请尽量让两个集合的累加和接近
+ * 返回：
+ * 最接近的情况下，较小集合的累加和
+ */
+public class Code02_SplitSumClosedSizeHalf {
+
+    public static int right(int[] arr) {
+        if(arr == null || arr.length < 2) {
+            return 0;
+        }
+        int sum  = 0;
+        for(int num : arr) {
+            sum += num;
+        }
+        if((arr.length & 1) == 0){
+            return process(arr, 0, arr.length / 2, sum / 2);
+        }else{
+            return Math.max(process(arr, 0, arr.length / 2, sum / 2),process(arr, 0, arr.length / 2 + 1, sum / 2));
+        }
+    }
+
+    /**
+     * @param arr
+     * @param i   arr[i....]自由选择，个数picks，累加和<= rest 离rest最近的返回
+     * @param picks  挑选个数一定要是picks个
+     * @param rest
+     * @return
+     */
+    public static int process(int[] arr, int i, int picks, int rest) {
+        //如果没有数了
+        if (i == arr.length) {
+            return picks == 0 ? 0 : -1;
+        }else { // 还有数arr[i]
+            //(1) 不要arr[i]
+            int p1 = process(arr, i + 1, picks, rest);
+            //(2) 使用arr[i]
+            int p2 = -1;
+            int next = -1;
+            if(arr[i] <= rest) {
+                next = process(arr, i + 1, picks - 1, rest - arr[i]);
+            }
+            if(next != -1) {
+                p2 = arr[i] + next;
+            }
+            return Math.max(p1, p2);
+        }
+    }
+
+    public static int dp(int[] arr) {
+        if(arr == null || arr.length < 2) {
+            return 0;
+        }
+        int sum  = 0;
+        for(int num : arr) {
+            sum += num;
+        }
+        sum /= 2;
+        int N = arr.length;
+        int M = (N + 1) / 2;  //向上取整
+        int[][][] dp = new int[N+1][M+1][sum + 1];
+        for(int i = 0; i <= N; i++) {
+            for(int j = 0; j <= M; j++) {
+                for(int k = 0; k <= sum; k++) {
+                    dp[i][j][k] = -1;
+                }
+            }
+        }
+        for(int rest = 0; rest <= sum; rest++) {
+            dp[N][0][rest] = 0;
+        }
+        for(int i = N-1; i >= 0; i--) {
+            for(int picks = 0; picks <= M; picks++) {
+                for(int rest = 0;rest <= sum; rest++) {
+                    //(1) 不要arr[i]
+                    int p1 = dp[i + 1][picks][rest];
+                    //(2) 使用arr[i]
+                    int p2 = -1;
+                    int next = -1;
+                    if(arr[i] <= rest && picks-1 >= 0) {
+                        next = dp[i + 1][picks - 1][rest - arr[i]];
+                    }
+                    if(next != -1) {
+                        p2 = arr[i] + next;
+                    }
+                    dp[i][picks][rest] = Math.max(p1, p2);
+                }
+            }
+        }
+
+        if((arr.length & 1) == 0){
+            return dp[0][arr.length / 2][sum];
+        }else{
+            return Math.max(dp[0][arr.length / 2][sum],dp[0][arr.length / 2 + 1][sum]);
+        }
+    }
+
+    //test
+    public static int dp2(int[] arr) {
+        if (arr == null || arr.length < 2) {
+            return 0;
+        }
+        int sum = 0;
+        for (int num : arr) {
+            sum += num;
+        }
+        sum >>= 1;
+        int N = arr.length;
+        int M = (arr.length + 1) >> 1;
+        int[][][] dp = new int[N][M + 1][sum + 1];
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j <= M; j++) {
+                for (int k = 0; k <= sum; k++) {
+                    dp[i][j][k] = Integer.MIN_VALUE;
+                }
+            }
+        }
+        for (int i = 0; i < N; i++) {
+            for (int k = 0; k <= sum; k++) {
+                dp[i][0][k] = 0;
+            }
+        }
+        for (int k = 0; k <= sum; k++) {
+            dp[0][1][k] = arr[0] <= k ? arr[0] : Integer.MIN_VALUE;
+        }
+        for (int i = 1; i < N; i++) {
+            for (int j = 1; j <= Math.min(i + 1, M); j++) {
+                for (int k = 0; k <= sum; k++) {
+                    dp[i][j][k] = dp[i - 1][j][k];
+                    if (k - arr[i] >= 0) {
+                        dp[i][j][k] = Math.max(dp[i][j][k], dp[i - 1][j - 1][k - arr[i]] + arr[i]);
+                    }
+                }
+            }
+        }
+        return Math.max(dp[N - 1][M][sum], dp[N - 1][N - M][sum]);
+    }
+
+    // for test
+    public static int[] randomArray(int len, int value) {
+        int[] arr = new int[len];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (int) (Math.random() * value);
+        }
+        return arr;
+    }
+
+    // for test
+    public static void printArray(int[] arr) {
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+    }
+
+    // for test
+    public static void main(String[] args) {
+        int maxLen = 10;
+        int maxValue = 50;
+        int testTime = 10000;
+        System.out.println("测试开始");
+        for (int i = 0; i < testTime; i++) {
+            int len = (int) (Math.random() * maxLen);
+            int[] arr = randomArray(len, maxValue);
+            int ans1 = right(arr);
+            int ans2 = dp(arr);
+            int ans3 = dp2(arr);
+            if (ans1 != ans2 || ans1 != ans3) {
+                printArray(arr);
+                System.out.println(ans1);
+                System.out.println(ans2);
+                System.out.println(ans3);
+                System.out.println("Oops!");
+                break;
+            }
+        }
+        System.out.println("测试结束");
+    }
+}
+```
+
+
+
+### 3、DP优化 - 四边形不等式技巧
+
+
+
+### 4、DP优化 - 状态压缩
+
+
+
+### 5、DP优化 - 其他优化
