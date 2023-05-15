@@ -1361,8 +1361,6 @@ public class Code04_LongestCommonSubsequence {
 
 [516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)
 
-难度中等1010收藏分享切换为英文接收动态反馈
-
 给你一个字符串 s ，找出其中最长的回文子序列，并返回该序列的长度。
 
 子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
