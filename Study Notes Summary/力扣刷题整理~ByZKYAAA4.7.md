@@ -8318,6 +8318,146 @@ class Solution:
         return dp[n][m]
 ```
 
+
+
+#### [97. 交错字符串](https://leetcode.cn/problems/interleaving-string/)(样本对应模型)
+
+给定三个字符串 s1、s2、s3，请你帮忙验证 s3 是否是由 s1 和 s2 交错 组成的。
+
+两个字符串 s 和 t 交错 的定义与过程如下，其中每个字符串都会被分割成若干 非空 子字符串：
+
+- s = s1 + s2 + ... + sn
+- t = t1 + t2 + ... + tm
+- |n - m| <= 1
+- 交错 是 s1 + t1 + s2 + t2 + s3 + t3 + ... 或者 t1 + s1 + t2 + s2 + t3 + s3 + ...
+
+**注意：**`a + b` 意味着字符串 `a` 和 `b` 连接。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2020/09/02/interleave.jpg)
+
+```java
+输入：s1 = "aabcc", s2 = "dbbca", s3 = "aadbbcbcac"
+输出：true
+```
+
+**示例 2：**
+
+```
+输入：s1 = "aabcc", s2 = "dbbca", s3 = "aadbbbaccc"
+输出：false
+```
+
+**示例 3：**
+
+```
+输入：s1 = "", s2 = "", s3 = ""
+输出：true
+```
+
+**提示：**
+
+- 0 <= s1.length, s2.length <= 100
+- 0 <= s3.length <= 200
+- s1、s2、和 s3 都由小写英文字母组成
+
+**java代码：**
+
+```java
+class Solution {
+    //样本对应模型
+    public boolean isInterleave(String s1, String s2, String s3) {
+        int n = s1.length(), m = s2.length();
+        if(s1 == null || s2 == null || s3==null) return false;
+        char[] str1 = s1.toCharArray();
+		char[] str2 = s2.toCharArray();
+		char[] str3 = s3.toCharArray();
+
+        if(n+m != str3.length) return false;
+
+        //dp[i][j]表示s1中前i个和s2中前j个组成s3中前面i+j个
+        boolean[][] dp = new boolean[n+1][m+1];
+        //(1) 当为0的时候为true
+        dp[0][0] = true;    
+        //(2) 当只有s1凑s3的时候，s2没有，此时相同则为true，不同之后则全为false
+        for(int i = 1; i <=n; i++){
+            if(str1[i-1] != str3[i-1]) break;
+            dp[i][0] = true;
+        }
+        //(3) 当只有s2凑s3的时候，s1没有，此时相同则为true，不同之后则全为false
+        for(int i = 1; i <= m; i++){
+            if(str2[i-1] != str3[i-1]) break;
+            dp[0][i] = true;
+        }
+        /*
+        (4) 其他情况: s3最后一个字符只可能来自两种情况
+        s3最后一个字母来自s1,则s3[i+j-1] == s1[i-1],此时dp[i][j] = dp[i-1][j]
+        s3最后一个字母来自s2,则s3[i+j-1] == s2[j-1],此时dp[i][j] = dp[i][j-1]
+        这两种情况任意一种都可以 ||
+        */
+        for(int i = 1; i <= n; i++) {
+            for(int j = 1; j <= m; j++) {
+                if(
+                    (str1[i-1] == str3[i+j-1] && dp[i-1][j]) || 
+                    (str2[j-1] == str3[i+j-1] && dp[i][j-1])
+                )
+                    dp[i][j] = true;
+            }
+        }
+        return dp[n][m];
+    }
+}
+```
+
+**c++代码：**
+
+```c
+class Solution {
+public:
+    bool isInterleave(string s1, string s2, string s3) {
+        /*
+        DP:
+        1.状态表示 f(i,j)
+        (1)集合：f[i][j]
+        表示 s1 的前 i 个字符和 s2 的前 j 个字符是否可以交错组成 s3 的前 i+j 个字符。
+        (2)属性：是否是空串
+        2.状态计算
+        s1:0--------i
+        s2:0----------------j
+        s3:0---------------------i+j
+        状态转移：如果 s3[i+j]匹配 s1[i]，则问题就转化成了 f[i−1][j]；
+        如果 s3[i+j] 匹配 s2[j]，则问题就转化成了 f[i][j−1]。
+        两种情况只要有一种为真，则 f[i][j] 就为真。
+        (1)f(i-1,j)
+            表示s3最后一个字符是以s1结尾的,且前面部分s1和s2加起来是和目前的s3相等的
+            同时需要满足s1.size()-1+s2.size()=i-1+j=s3.size()-1;
+        (2)f(i,j-1)
+            表示s3最后一个字符是以s2结尾的
+            同时需要满足s1.size()+s2.size()-1=i+j-1=s3.size()-1;
+        */
+        int n=s1.size(),m=s2.size();
+        if(s3.size()!=n+m) return false;
+        s1=' '+s1,s2=' '+s2,s3=' '+s3;
+
+        vector<vector<bool>> f(n+1,vector<bool>(m+1));
+
+        for(int i=0;i<=n;i++){
+            for(int j=0;j<=m;j++){
+                if(!i && !j) f[i][j]=true;
+                else{
+                    if(i && s1[i]==s3[i+j]) f[i][j]=f[i-1][j];
+                    if(j && s2[j]==s3[i+j]) f[i][j]=f[i][j]||f[i][j-1];
+                }
+            }
+        }
+        return f[n][m];
+    }
+};
+```
+
+
+
 #### [712. 两个字符串的最小ASCII删除和](https://leetcode.cn/problems/minimum-ascii-delete-sum-for-two-strings/)(样本对应模型)
 
 给定两个字符串`s1` 和 `s2`，返回 *使两个字符串相等所需删除字符的 **ASCII** 值的最小和* 。
