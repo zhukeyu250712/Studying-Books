@@ -10882,6 +10882,125 @@ public:
 
 ## 十、链表
 
+### 1、单链表
+
+####  [19. 删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
+给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2020/10/03/remove_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], n = 2
+输出：[1,2,3,5]
+```
+
+**示例 2：**
+
+```
+输入：head = [1], n = 1
+输出：[]
+```
+
+**示例 3：**
+
+```
+输入：head = [1,2], n = 1
+输出：[1]
+```
+
+**提示：**
+
+- 链表中结点的数目为 `sz`
+- `1 <= sz <= 30`
+- `0 <= Node.val <= 100`
+- `1 <= n <= sz`
+
+**c++代码实现：**
+
+```c
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        auto dummy = new ListNode(-1);
+        dummy->next = head;
+        int len = 0;
+        for(auto p = dummy; p;p=p->next) len++;
+
+        auto p = dummy;
+        for(int i = 0; i < len - n - 1; i++) p = p->next;
+        p->next = p->next->next;
+        return dummy->next;
+    }
+};
+```
+
+#### [剑指 Offer 18. 删除链表的节点](https://leetcode.cn/problems/shan-chu-lian-biao-de-jie-dian-lcof/)
+
+给定单向链表的头指针和一个要删除的节点的值，定义一个函数删除该节点。
+
+返回删除后的链表的头节点。
+
+**注意：**此题对比原题有改动
+
+**示例 1:**
+
+输入: head = [4,5,1,9], val = 5
+输出: [4,1,9]
+解释: 给定你链表中值为 5 的第二个节点，那么在调用了你的函数之后，该链表应变为 4 -> 1 -> 9.
+
+**示例 2:**
+
+输入: head = [4,5,1,9], val = 1
+输出: [4,5,9]
+解释: 给定你链表中值为 1 的第三个节点，那么在调用了你的函数之后，该链表应变为 4 -> 5 -> 9.
+
+**说明：**
+
+- 题目保证链表中节点的值互不相同
+- 若使用 C 或 C++ 语言，你不需要 `free` 或 `delete` 被删除的节点
+
+**c++代码实现：**
+
+```c
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* deleteNode(ListNode* head, int val) {
+        auto dumy = new ListNode(-1);
+        dumy->next = head;
+        auto p = dumy;
+        while(p->next){
+            if(p->next->val != val) p = p->next;
+            else break;
+        }
+        p->next = p->next->next;
+        return dumy->next;
+    }
+};
+```
+
+
+
 #### [817. 链表组件](https://leetcode.cn/problems/linked-list-components/)
 
 给定链表头结点 head，该链表上的每个结点都有一个 唯一的整型值 。同时给定列表 nums，该列表是上述链表中整型值的一个子集。
