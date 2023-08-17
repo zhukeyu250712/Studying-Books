@@ -10582,6 +10582,102 @@ class Solution:
         return dp[0][n + 1]
 ```
 
+#### [546. 移除盒子](https://leetcode.cn/problems/remove-boxes/)
+
+给出一些不同颜色的盒子 `boxes` ，盒子的颜色由不同的正数表示。
+
+你将经过若干轮操作去去掉盒子，直到所有的盒子都去掉为止。每一轮你可以移除具有相同颜色的连续 `k` 个盒子（`k >= 1`），这样一轮之后你将得到 `k * k` 个积分。
+
+返回 *你能获得的最大积分和* 。
+
+**示例 1：**
+
+```
+输入：boxes = [1,3,2,2,2,3,4,3,1]
+输出：23
+解释：
+[1, 3, 2, 2, 2, 3, 4, 3, 1] 
+----> [1, 3, 3, 4, 3, 1] (3*3=9 分) 
+----> [1, 3, 3, 3, 1] (1*1=1 分) 
+----> [1, 1] (3*3=9 分) 
+----> [] (2*2=4 分)
+```
+
+**示例 2：**
+
+```
+输入：boxes = [1,1,1]
+输出：9
+```
+
+**示例 3：**
+
+```
+输入：boxes = [1]
+输出：1
+```
+
+**提示：**
+
+- `1 <= boxes.length <= 100`
+- `1 <= boxes[i] <= 100`
+
+**c++代码**
+
+```c
+class Solution {
+public:
+    /*
+    DP
+    (1) 状态表示 f[i][j][k]
+        1) 集合：所有将[l,r]清空，且最后删除r，且最后一步删除k个盒子的所有方案的集合
+        2) 属性：分组Max{f[0][n-1][k]}
+    (2) 状态计算
+        1) k = 1 时, l自己单独删除
+            l l+1 .... r
+            先删除l+1到r的，再删除l位置
+            1*1 + max{f[l+1][r][k]} = f(i,j,1)=1+g(i+1,j)
+        2) k > 1 时, l与后边的同颜色的盒子合并删除
+            按照最后删除的数是 u 划分 boxes[l] == boxes[u]
+            l+1
+            l+2
+            l+3
+            ....
+            u
+            ....
+            r
+            区间可以分为l ....u-1 u u+1 .....r
+            ① 删除 l+1 ~ u-1部分，max{f[l+1][u-1][k]}
+            ② 删除l(占1) 和 u ~ r(占k-1)部分 ，f[u][j][k-1] - (k-1)^2 + k^2
+            也就是说，我们找到了盒子 boxes[u]，想要 boxes[l] 与它一起删除，则此时的删除操作可以分为两部分，首先删除区间 [l + 1, u - 1]，然后删除盒子 l 和区间 [u, r]。由于有了 k 这一维，所以假设区间 [u, r] 删除时的 k - 1 这个信息已经算好了，则区间 [l, r] 的 k 就可以转移了
+    */
+    int removeBoxes(vector<int>& boxes) {
+        int n = boxes.size(), INF = 1e8;
+        vector<vector<vector<int>>> f(n,vector<vector<int>>(n,vector<int>(n + 1, -INF))); 
+        vector<vector<int>> g(n,vector<int>(n, -INF));
+        for(int len = 1; len <= n; len ++) {
+            for(int l = 0; l + len - 1 < n; l ++) {
+                int r = l + len - 1;
+                for(int k = 1; k <= len; k ++) {
+                    if(len == 1) f[l][r][k] = 1;
+                    else if(k == 1) f[l][r][k] = 1 + g[l + 1][r];
+                    else {
+                        for(int u = l + 1; u <= r - k + 2; u ++) {
+                            if(boxes[l] != boxes[u]) continue;
+                            int t = 0;
+                            if(l + 1 <= u - 1) t = g[l + 1][u - 1];
+                            f[l][r][k] = max(f[l][r][k], t + f[u][r][k-1] - (k-1)*(k-1) + k*k);
+                        }
+                    }
+                    g[l][r] = max(g[l][r], f[l][r][k]);
+                }
+            }
+        }
+        return g[0][n-1];
+    }
+};
+```
+
 
 
 ### 10、双序列型
