@@ -10798,6 +10798,152 @@ func Min(a, b int) int {
 }
 ```
 
+#### [1039. 多边形三角剖分的最低得分](https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/)
+
+你有一个凸的 `n` 边形，其每个顶点都有一个整数值。给定一个整数数组 `values` ，其中 `values[i]` 是第 `i` 个顶点的值（即 **顺时针顺序** ）。
+
+假设将多边形 **剖分** 为 `n - 2` 个三角形。对于每个三角形，该三角形的值是顶点标记的**乘积**，三角剖分的分数是进行三角剖分后所有 `n - 2` 个三角形的值之和。
+
+返回 *多边形进行三角剖分后可以得到的最低分* 。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2021/02/25/shape1.jpg)
+
+```
+输入：values = [1,2,3]
+输出：6
+解释：多边形已经三角化，唯一三角形的分数为 6。
+```
+
+**示例 2：**
+
+![](https://assets.leetcode.com/uploads/2021/02/25/shape2.jpg)
+
+```
+输入：values = [3,7,4,5]
+输出：144
+解释：有两种三角剖分，可能得分分别为：3*7*5 + 4*5*7 = 245，或 3*4*5 + 3*4*7 = 144。最低分数为 144。
+```
+
+**示例 3：**
+
+![](https://assets.leetcode.com/uploads/2021/02/25/shape3.jpg)
+
+```
+输入：values = [1,3,1,4,1,5]
+输出：13
+解释：最低分数三角剖分的得分情况为 1*1*3 + 1*1*4 + 1*1*5 + 1*1*1 = 13。
+```
+
+**提示：**
+
+- `n == values.length`
+- `3 <= n <= 50`
+- `1 <= values[i] <= 100`
+
+**c++代码**
+
+```c
+class Solution {
+public:
+    /*
+    DP
+    (1) 状态表示
+        1) 集合：所有[l,r]的划分方案的集合
+        2) 属性：权值的最小值
+    (2) 状态计算
+        f[l][r]划分
+        以l-r为一条三角形边的三角形，按照另外一个顶点划分
+        1) l + 1
+        2) l + 2
+        ........
+        k) l - k
+        4) r - 2
+        5) r - 1
+        状态相互独立
+        f[l][r]按照最后一个顶点是 k 划分
+        f[l][k] + f[k][r] + w[l]*w[k]*w[r]        
+    */
+    int minScoreTriangulation(vector<int>& w) {
+        int n = w.size();
+        vector<vector<int>> f(n, vector<int>(n));
+
+        for(int len = 3; len <= n; len ++) {
+            for(int l = 0; l + len -1 < n; l ++) {
+                int r = l + len - 1;
+                if(len == 3) f[l][r] = w[l] * w[r] * w[l + 1];
+                else {
+                    f[l][r] = 1e9;
+                    for(int k = l + 1; k <= r - 1; k ++) 
+                        f[l][r] = min(f[l][r], f[l][k] + f[k][r] + w[l] * w[k] * w[r]);
+                }
+            }
+        }
+        return f[0][n - 1];
+    }
+};
+```
+
+**java代码**
+
+```java
+class Solution {
+    public int minScoreTriangulation(int[] w) {
+        int n = w.length;
+        int[][] f = new int[n][n];
+
+        for(int len = 3; len <= n; len ++) {
+            for(int l = 0; l + len - 1 < n; l ++) {
+                int r = l + len - 1;
+                if(len == 3) f[l][r] = w[l] * w[r] * w[l + 1];
+                else {
+                    f[l][r] = Integer.MAX_VALUE;
+                    for(int k = l + 1; k <= r - 1; k ++) {
+                        f[l][r] = Math.min(f[l][r], f[l][k] + f[k][r] + w[l] * w[k] * w[r]);
+                    }
+                }
+            }
+        }
+        return f[0][n - 1];
+    }
+}
+```
+
+**go代码**
+
+```go
+func minScoreTriangulation(w []int) int {
+    n := len(w)
+    f := make([][]int, n)
+    for i := 0; i < n; i ++ {
+        f[i] = make([]int, n)
+    }
+
+    for len := 3; len <= n; len ++ {
+        for l := 0; l + len - 1 < n; l ++ {
+            r := l + len - 1
+            if len == 3 {
+                f[l][r] = w[l] * w[r] * w[l + 1]
+            }else {
+                f[l][r] = 1e8;
+                for k := l + 1; k <= r -1; k ++ {
+                    f[l][r] =  Min(f[l][r], f[l][k] + f[k][r] + w[l] * w[k] * w[r])
+                } 
+            }
+        }
+    }
+    return f[0][n - 1]
+}
+
+func Min(a, b int) int {
+    if a > b {
+        return b
+    }
+    return a
+}
+```
+
 
 
 ### 10、双序列型
