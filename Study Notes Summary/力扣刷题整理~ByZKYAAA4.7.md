@@ -10944,6 +10944,189 @@ func Min(a, b int) int {
 }
 ```
 
+#### [1139. 最大的以 1 为边界的正方形](https://leetcode.cn/problems/largest-1-bordered-square/)
+
+给你一个由若干 `0` 和 `1` 组成的二维网格 `grid`，请你找出边界全部由 `1` 组成的最大 **正方形** 子网格，并返回该子网格中的元素数量。如果不存在，则返回 `0`。
+
+**示例 1：**
+
+```
+输入：grid = [[1,1,1],[1,0,1],[1,1,1]]
+输出：9
+```
+
+**示例 2：**
+
+```
+输入：grid = [[1,1,0,0]]
+输出：1
+```
+
+**提示：**
+
+- `1 <= grid.length <= 100`
+- `1 <= grid[0].length <= 100`
+- `grid[i][j]` 为 `0` 或 `1`
+
+**c++代码**
+
+```c
+class Solution {
+public:
+    vector<vector<int>> s;
+
+    int get(int x1, int y1, int x2, int y2) {
+        return s[x2][y2] - s[x1 - 1][y2] - s[x2][y1 - 1] + s[x1 - 1][y1 - 1];
+    }
+
+    int largest1BorderedSquare(vector<vector<int>>& g) {
+        int n = g.size(), m = g[0].size();
+        s = vector<vector<int>>(n + 1,vector<int>(m + 1));
+
+        for(int i = 1; i <= n; i++) {
+            for(int j = 1; j <= m; j++) {
+                s[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + g[i - 1][j - 1];
+            }
+        }
+
+        // len == 1的时候需要特判
+        for(int len = min(n, m); len > 1; len --) {
+            //{i,j}表示以该点为一个角
+            for(int i = 1; i + len - 1 <= n; i ++) {
+                for(int j = 1; j + len - 1 <= m; j ++) {
+                    int  a  = i, b = j, c = i + len - 1, d = j + len - 1;
+                    //用整个大正方形减去中间的得到的是否等于边长的和
+                    if(get(a,b,c,d)- get(a + 1, b + 1,c - 1, d - 1) == 4 * (len - 1))
+                        return len * len;
+                }
+            }
+        }
+        //处理len == 1的情况
+        if(s[n][m] > 0) return 1;
+        return 0;
+    }
+};
+```
+
+**java代码**
+
+```java
+class Solution {
+    int[][] s;
+
+    int get (int x1, int y1, int x2, int y2){
+        return s[x2][y2] -  s[x1 - 1][y2] - s[x2][y1 - 1] + s[x1 - 1][y1 - 1];
+    }
+
+    public int largest1BorderedSquare(int[][] g) {
+        int n = g.length, m = g[0].length;
+        s = new int[n + 1][m + 1];
+
+        for(int i = 1; i <= n; i ++) {
+            for(int j = 1; j <= m; j ++) {
+                s[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + g[i - 1][j - 1];
+            }
+        }
+
+        for(int len = Math.min(n ,m); len > 1; len --) {
+            for(int i = 1; i + len - 1 <= n; i ++) {
+                for(int j = 1; j + len - 1 <= m; j ++) {
+                    int a = i, b = j, c = i + len - 1, d = j + len - 1;
+                    if(get(a, b, c , d) - get(a + 1, b + 1, c - 1, d - 1) == 4 * (len - 1)){
+                        return len * len;
+                    }
+                }
+            }
+        }
+
+        if(s[n][m] > 0) return 1;
+        return 0;
+    }
+}
+```
+
+**go 语言**
+
+```go
+func largest1BorderedSquare(g [][]int) int {
+    n, m := len(g), len(g[0])
+    s := make([][]int, n + 1)
+    for i := range s {
+        s[i] = make([]int, m + 1)
+    }
+    for i, row := range g {
+        for j, v :=range row {
+            s[i + 1][j + 1] = s[i][j + 1] + s[i + 1][j] - s[i][j] + v
+        }
+    }
+    for len := Min(n, m); len > 1; len -- {
+        for i := 1; i + len - 1 <= n; i ++ {
+            for j := 1; j + len - 1 <= m; j ++ {
+                a, b, c, d := i, j, i + len - 1, j + len - 1
+                ans1 := s[c][d] - s[a - 1][d] - s[c][b - 1] + s[a - 1][b - 1]
+                ans2 := s[c-1][d-1] -s[a][d - 1] -s[c - 1][b] + s[a][b]
+                ans := ans1 - ans2
+                if ans == 4 * (len - 1) {
+                    return len * len
+                } 
+            }
+        }
+    }
+
+    if s[n][m] > 0 {
+        return 1
+    }
+    return 0
+}
+
+func Min(a, b int) int {
+    if(a > b) {
+        return b
+    }
+    return a
+}
+```
+
+使用make的切片和数组运行时间和内存的区别
+
+```go
+var s [110][110]int
+
+func largest1BorderedSquare(g [][]int) int {
+    n, m := len(g), len(g[0])
+    for i, row := range g {
+        for j, v :=range row {
+            s[i + 1][j + 1] = s[i][j + 1] + s[i + 1][j] - s[i][j] + v
+        }
+    }
+    for len := Min(n, m); len > 1; len -- {
+        for i := 1; i + len - 1 <= n; i ++ {
+            for j := 1; j + len - 1 <= m; j ++ {
+                a, b, c, d := i, j, i + len - 1, j + len - 1
+                ans1 := s[c][d] - s[a - 1][d] - s[c][b - 1] + s[a - 1][b - 1]
+                ans2 := s[c-1][d-1] -s[a][d - 1] -s[c - 1][b] + s[a][b]
+                ans := ans1 - ans2
+                if ans == 4 * (len - 1) {
+                    return len * len
+                } 
+            }
+        }
+    }
+
+    if s[n][m] > 0 {
+        return 1
+    }
+    return 0
+}
+
+func Min(a, b int) int {
+    if(a > b) {
+        return b
+    }
+    return a
+}
+```
+
 
 
 ### 10、双序列型
