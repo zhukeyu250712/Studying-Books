@@ -10441,6 +10441,8 @@ public:
 
 ### 9、区间型 II
 
+#### (1)区间合并
+
 #### [312. 戳气球](https://leetcode.cn/problems/burst-balloons/)
 
 有 `n` 个气球，编号为`0` 到 `n - 1`，每个气球上都标有一个数字，这些数字存在数组 `nums` 中。
@@ -10678,116 +10680,107 @@ public:
 };
 ```
 
-#### [221. 最大正方形](https://leetcode.cn/problems/maximal-square/)
+#### [664. 奇怪的打印机](https://leetcode.cn/problems/strange-printer/)
 
-在一个由 `'0'` 和 `'1'` 组成的二维矩阵内，找到只包含 `'1'` 的最大正方形，并返回其面积。
+有台奇怪的打印机有以下两个特殊要求：
+
+- 打印机每次只能打印由 **同一个字符** 组成的序列。
+- 每次可以在从起始到结束的任意位置打印新字符，并且会覆盖掉原来已有的字符。
+
+给你一个字符串 `s` ，你的任务是计算这个打印机打印它需要的最少打印次数。
 
 **示例 1：**
 
-![](https://assets.leetcode.com/uploads/2020/11/26/max1grid.jpg)
-
 ```
-输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
-输出：4
+输入：s = "aaabbb"
+输出：2
+解释：首先打印 "aaa" 然后打印 "bbb"。
 ```
 
 **示例 2：**
 
-![](https://assets.leetcode.com/uploads/2020/11/26/max2grid.jpg)
-
 ```
-输入：matrix = [["0","1"],["1","0"]]
-输出：1
-```
-
-**示例 3：**
-
-```
-输入：matrix = [["0"]]
-输出：0
+输入：s = "aba"
+输出：2
+解释：首先打印 "aaa" 然后在第二个位置打印 "b" 覆盖掉原来的字符 'a'。
 ```
 
 **提示：**
 
-- `m == matrix.length`
-- `n == matrix[i].length`
-- `1 <= m, n <= 300`
-- `matrix[i][j]` 为 `'0'` 或 `'1'`
+- `1 <= s.length <= 100`
+- `s` 由小写英文字母组成
 
-**c++实现**
+**c++代码**
 
 ```c
 class Solution {
 public:
-    int maximalSquare(vector<vector<char>>& matrix) {
-        int n = matrix.size(), m = matrix[0].size();
-        vector<vector<int>> dp(n + 1,vector<int>(m + 1));
-        int res = 0;
-        for(int i = 1; i <= n; i ++) {
-            for(int j = 1; j <= m; j ++) {
-                if(matrix[i-1][j-1] == '1') {
-                    dp[i][j] = min(dp[i-1][j], min(dp[i][j-1], dp[i-1][j-1])) + 1;
-                    res = max(res, dp[i][j]);
+    /*
+    DP
+    (1) 状态表示f[i][j]
+        1) 集合: 打印出[i,j]的所有方案的集合
+        2) 属性:Min
+    (2) 状态计算
+        i----_-k-------j
+
+        按照枚举k的位置划分
+        1) [i, i]
+            ① 特殊情况：如果第一步是刷的i自己，需要一步，后面还需要刷[i + 1, j]
+            f[i][j] = f[i][i] + f[i + 1][j] = 1 + f[i + 1][j]
+        2) [i, i + 1]
+        ...
+        3) [i, k]
+            ② 一般情况：
+            注意：需要满足s[i] == s[k]，那么开头的连续段可以延伸到k，中间的s[i+1][k-1]可以在后面操作中覆盖，将s[i]和s[k]放到第一次操作，划分为[i][k-1]和[k+1][j]两个子问题
+            [i,k]怎么计算? s[i] == s[k]
+                先刷[i, k - 1]
+                如果刷了[i, k-1],则后面的[k + 1， j]和前面的独立
+            总结：f[i][j] = min(f[i][j], f[i][k-1] + f[k+1][j])
+        4) [i, j]
+        
+    */
+    int strangePrinter(string s) {
+        int n = s.size();
+        vector<vector<int>> f(n + 1,vector<int>(n + 1));
+
+        for(int len = 1; len <= n; len ++) {
+            for(int i = 0; i + len - 1 < n; i ++) {
+                int j = i + len - 1;
+                // (1)处理特殊情况，先打印[i][i]
+                f[i][j] = 1 + f[i + 1][j];  //需要开n + 1大小
+                // (2)处理枚举 k 的情况
+                for(int k = i + 1; k <= j; k ++) {
+                    if(s[i] == s[k]) 
+                        f[i][j] = min(f[i][j], f[i][k - 1] + f[k + 1][j]);
                 }
             }
         }
-        return res * res;
+        return f[0][n - 1];
     }
 };
 ```
 
-**java实现**
-
-```java
-class Solution {
-    public int maximalSquare(char[][] matrix) {
-        int n = matrix.length, m = matrix[0].length;
-        if(n == 0 || m == 0) return 0;
-        int[][] dp = new int[n + 1][m + 1];
-        int res = 0;
-        for(int i = 1; i <= n; i ++) {
-            for(int j = 1; j <= m; j ++) {
-                if(matrix[i - 1][j - 1] == '1') {
-                    dp[i][j] = Math.min(dp[i-1][j-1], Math.min(dp[i - 1][j], dp[i][j - 1])) + 1;
-                    res = Math.max(res, dp[i][j]);
-                }
-            }
-        }
-        return res * res;
-    }
-}
-```
-
-**go语言**
+**go语言代码**
 
 ```go
-func maximalSquare(matrix [][]byte) int {
-    n, m := len(matrix), len(matrix[0])
-
-    // dp := make([][]int, n + 1)
-    // for i := 0; i < n+1; i++ {
-    //     dp[i] = make([]int, m + 1)
-    // }
-
-    dp := [310][310]int{}
-
-    res := 0
-    for i := 1; i <= n; i ++ {
-        for j := 1; j <= m; j ++ {
-            if matrix[i - 1][j - 1] == '1' {
-                dp[i][j] = Min(dp[i-1][j-1], Min(dp[i-1][j], dp[i][j-1])) + 1
-                res = Max(res, dp[i][j])
-            }
+func strangePrinter(s string) int {
+    n := len(s)
+    f := make([][]int, n + 1)
+    for i := 0; i <= n; i ++ {
+        f[i] = make([]int, n + 1)
+    }
+    for len := 1; len <= n; len ++ {
+        for i := 0; i + len - 1 < n; i ++ {
+            j := i + len - 1
+            f[i][j] = 1 + f[i + 1][j]
+            for k := i + 1; k <= j; k ++ {
+                if s[i] == s[k] {
+                    f[i][j] = Min(f[i][j], f[i][k - 1] + f[k + 1][j])
+                }
+            } 
         }
     }
-    return res * res
-}
-
-func Max(a, b int) int {
-    if a > b {
-        return a
-    }
-    return b
+    return f[0][n - 1]
 }
 
 func Min(a, b int) int {
@@ -10797,6 +10790,10 @@ func Min(a, b int) int {
     return a
 }
 ```
+
+
+
+#### (2)三角剖分
 
 #### [1039. 多边形三角剖分的最低得分](https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/)
 
@@ -10943,6 +10940,130 @@ func Min(a, b int) int {
     return a
 }
 ```
+
+#### (3)矩形分割
+
+#### [221. 最大正方形](https://leetcode.cn/problems/maximal-square/)
+
+在一个由 `'0'` 和 `'1'` 组成的二维矩阵内，找到只包含 `'1'` 的最大正方形，并返回其面积。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2020/11/26/max1grid.jpg)
+
+```
+输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+输出：4
+```
+
+**示例 2：**
+
+![](https://assets.leetcode.com/uploads/2020/11/26/max2grid.jpg)
+
+```
+输入：matrix = [["0","1"],["1","0"]]
+输出：1
+```
+
+**示例 3：**
+
+```
+输入：matrix = [["0"]]
+输出：0
+```
+
+**提示：**
+
+- `m == matrix.length`
+- `n == matrix[i].length`
+- `1 <= m, n <= 300`
+- `matrix[i][j]` 为 `'0'` 或 `'1'`
+
+**c++实现**
+
+```c
+class Solution {
+public:
+    int maximalSquare(vector<vector<char>>& matrix) {
+        int n = matrix.size(), m = matrix[0].size();
+        vector<vector<int>> dp(n + 1,vector<int>(m + 1));
+        int res = 0;
+        for(int i = 1; i <= n; i ++) {
+            for(int j = 1; j <= m; j ++) {
+                if(matrix[i-1][j-1] == '1') {
+                    dp[i][j] = min(dp[i-1][j], min(dp[i][j-1], dp[i-1][j-1])) + 1;
+                    res = max(res, dp[i][j]);
+                }
+            }
+        }
+        return res * res;
+    }
+};
+```
+
+**java实现**
+
+```java
+class Solution {
+    public int maximalSquare(char[][] matrix) {
+        int n = matrix.length, m = matrix[0].length;
+        if(n == 0 || m == 0) return 0;
+        int[][] dp = new int[n + 1][m + 1];
+        int res = 0;
+        for(int i = 1; i <= n; i ++) {
+            for(int j = 1; j <= m; j ++) {
+                if(matrix[i - 1][j - 1] == '1') {
+                    dp[i][j] = Math.min(dp[i-1][j-1], Math.min(dp[i - 1][j], dp[i][j - 1])) + 1;
+                    res = Math.max(res, dp[i][j]);
+                }
+            }
+        }
+        return res * res;
+    }
+}
+```
+
+**go语言**
+
+```go
+func maximalSquare(matrix [][]byte) int {
+    n, m := len(matrix), len(matrix[0])
+
+    // dp := make([][]int, n + 1)
+    // for i := 0; i < n+1; i++ {
+    //     dp[i] = make([]int, m + 1)
+    // }
+
+    dp := [310][310]int{}
+
+    res := 0
+    for i := 1; i <= n; i ++ {
+        for j := 1; j <= m; j ++ {
+            if matrix[i - 1][j - 1] == '1' {
+                dp[i][j] = Min(dp[i-1][j-1], Min(dp[i-1][j], dp[i][j-1])) + 1
+                res = Max(res, dp[i][j])
+            }
+        }
+    }
+    return res * res
+}
+
+func Max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+
+func Min(a, b int) int {
+    if a > b {
+        return b
+    }
+    return a
+}
+```
+
+
 
 #### [1139. 最大的以 1 为边界的正方形](https://leetcode.cn/problems/largest-1-bordered-square/)
 
