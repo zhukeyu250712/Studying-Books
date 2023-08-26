@@ -9324,7 +9324,7 @@ public:
 
 #### 状态机DP模型股票买卖：
 
-#### [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+#### [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)（一次交易）
 
 给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
 
@@ -9372,7 +9372,7 @@ public:
 
 
 
-#### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+#### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)（多次交易分解）
 
 给你一个整数数组 prices ，其中 prices[i] 表示某支股票第 i 天的价格。
 
@@ -9414,10 +9414,13 @@ public:
 
 **c++代码实现：**
 
-**i天**买入，j天卖出
-    `Pj-pi=(p_i+1-pi)+(p_i+2-pi+1)+..+(pj-p_j-1)`
+```
+i--j买入卖出可以分解为每天买入再卖出
+i天买入，j天卖
+    p_j-p_i=(p_{i+1}-pi)+(p_{i+2}-p{i+1})+..+(pj-p_{j-1})
 
 将交易分解为单天交易，如果后一天和前一天的交易的值为负值，则交易满足条件
+```
 
 ```c
 class Solution {
