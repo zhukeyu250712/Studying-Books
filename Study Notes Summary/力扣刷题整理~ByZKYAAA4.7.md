@@ -9435,7 +9435,7 @@ public:
 };
 ```
 
-#### [123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)(前后缀分解)
+#### [123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)(前后缀分解-最多两次交易)
 
 给定一个数组，它的第 i 个元素是一支给定的股票在第 i 天的价格。
 
@@ -9495,7 +9495,7 @@ public:
         1.左边部分计算：
         (1)定义最小的值minp=INT_MAX，是买入对应的价值，和当前遍历到的prices[i]得到f[i]
             f[i]=prices[i]-minp
-        (2)当i的时候不卖得到第二种情况：
+        (2)当i天的时候不卖得到第二种情况：
             f[i]=f[i-1];
         综上：f[i]=max(f[i-1],prices[i]-minp)
         (3)更新minp
@@ -9526,9 +9526,67 @@ public:
             res=max(res,maxp-prices[i-1]+f[i-1]);
             maxp=max(maxp,prices[i-1]);
         }
-        return res;
+        return res; 
     }
 };
+```
+
+**java代码**
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        int n = prices.length;
+        int[] f = new int[n + 2];
+        int res = 0;
+        for(int i = 1, minp = Integer.MAX_VALUE; i <= n; i ++) {
+            f[i] = Math.max(f[i - 1],prices[i - 1] - minp);
+            minp = Math.min(minp, prices[i - 1]);
+        }
+
+        for(int i = n, maxp = 0; i > 0; i --) {
+            res = Math.max(res, maxp - prices[i - 1] + f[i - 1]);
+            maxp = Math.max(maxp,prices[i-1]);
+        }
+        return res;
+    }
+}
+```
+
+**go代码：**
+
+```go
+func maxProfit(prices []int) int {
+    const INF int = 1e8
+    n := len(prices)
+    f := make([]int, n + 1)
+    res := 0
+
+    for i, minp := 1, INF; i <= n; i ++ {
+        f[i] =  Max(f[i - 1], prices[i - 1] - minp)
+        minp = Min(minp, prices[i - 1]) 
+    }
+
+    for i, maxp := n, -INF; i >= 1; i -- {
+        res = Max(res, f[i - 1] + maxp - prices[i - 1])
+        maxp = Max(maxp, prices[i-1])
+    } 
+    return res
+}
+
+func Max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+
+func Min(a, b int) int {
+    if a > b {
+        return b
+    }
+    return a
+}
 ```
 
 **残酷刷题**
