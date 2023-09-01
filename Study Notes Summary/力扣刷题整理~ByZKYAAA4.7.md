@@ -9712,9 +9712,39 @@ DP
 };
 ```
 
+**java代码**
+
+```java
+class Solution {
+    public int maxProfit(int k, int[] prices) {
+        int N = 1010, M = 110;
+        int INF = (int) 1e8; 
+        int f[][][] = new int[N][M][2];
+        int n = prices.length;
+        for(int i = 0; i <  N; i ++) {
+            for(int j = 0; j < M; j ++) {
+                Arrays.fill(f[i][j], -INF);
+            }
+        }
+        for(int i = 0; i <= n; i ++) f[i][0][0] = 0;
+
+        for(int i = 1; i <= n; i ++) {
+            for(int j = 1; j <= k; j ++) {
+                f[i][j][0] = Math.max(f[i-1][j][0], f[i-1][j][1] + prices[i - 1]);
+                f[i][j][1] = Math.max(f[i-1][j][1], f[i-1][j-1][0] - prices[i - 1]);
+            }
+        }
+
+        int res = 0;
+        for(int i = 0; i <= k; i ++) res = Math.max(res, f[n][i][0]);
+        return res;
+    }
+}
+```
 
 
-#### [714. 买卖股票的最佳时机含手续费](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)(todo)
+
+#### [714. 买卖股票的最佳时机含手续费](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
 
 给定一个整数数组 prices，其中 prices[i]表示第 i 天的股票价格 ；整数 fee 代表了交易股票的手续费用。
 
@@ -9753,7 +9783,84 @@ DP
 **c++代码实现：**
 
 ```c
+/*
+手里无货0
+手里有货1
 
+(start)0 -(权值0)-> 0
+	0 -(-pi)-> 1   将手续费 -fee 算到这里
+		1 -(+pi)-> 0
+		1-->1
+*/
+class Solution {
+public:
+    int maxProfit(vector<int>& prices, int fee) {
+        int n = prices.size(), INF = 1e8;
+        int res = 0;
+        vector<vector<int>> f(n + 1, vector<int>(2, -INF));
+        f[0][0] = 0;
+        for(int i = 1; i <= n; i ++) {
+            f[i][0] = max(f[i - 1][0], f[i - 1][1] + prices[i - 1]);
+            // 卖出的时候减去手续费
+            f[i][1] = max(f[i - 1][1], f[i - 1][0] - prices[i - 1] - fee);
+            // end 状态 没有货物
+            res = max(res, f[i][0]);
+        } 
+        return res;
+    }
+};
+```
+
+**java代码：**
+
+```java
+class Solution {
+    public int maxProfit(int[] prices, int fee) {
+        int n = prices.length, INF =  Integer.MAX_VALUE;
+        int[][] f = new int[n + 1][2];
+        for(int i = 0; i <= n; i ++) {
+            Arrays.fill(f[i], -INF);
+        }
+        f[0][0] = 0;
+        int res = 0;
+        for(int i = 1; i <= n; i ++) {
+            f[i][0] = Math.max(f[i - 1][0], f[i - 1][1] + prices[i - 1]);
+            f[i][1] = Math.max(f[i - 1][1], f[i - 1][0] - prices[i - 1] - fee);
+            res = Math.max(res, f[i][0]);
+        }
+        return res;
+    }
+}
+```
+
+**go代码：**
+
+```go
+func maxProfit(prices []int, fee int) int {
+    n, INF := len(prices), int(1e8)
+    f := make([][]int, n + 1)
+    for i := 0; i <= n; i ++ {
+        f[i] = make([]int, 2)
+        f[i][0] = -INF
+        f[i][1] = -INF
+    }
+
+    f[0][0] = 0
+    res := 0
+    for i := 1; i <= n; i ++ {
+        f[i][0] = Max(f[i - 1][0], f[i - 1][1] + prices[i - 1])
+        f[i][1] = Max(f[i - 1][1], f[i - 1][0] - prices[i - 1] - fee)
+        res = Max(res, f[i][0])
+    }
+    return res
+}
+
+func Max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
 ```
 
 
