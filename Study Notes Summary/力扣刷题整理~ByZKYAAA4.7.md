@@ -9072,6 +9072,29 @@ public:
 };
 ```
 
+**go代码：**
+
+```go
+func rob(nums []int) int {
+    n := len(nums)
+    f := make([]int, n + 1) //一定选nums[i]
+    g := make([]int, n + 1) //一定不选nums[i]
+
+    for i := 1; i <= n; i ++ {
+        f[i] = g[i - 1] + nums[i - 1]
+        g[i] = max(g[i - 1], f[i - 1]) 
+    }
+    return max(f[n], g[n])
+}
+
+func max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+```
+
 
 
 #### [213. 打家劫舍 II](https://leetcode.cn/problems/house-robber-ii/)(状态机DP)
