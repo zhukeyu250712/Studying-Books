@@ -9255,6 +9255,77 @@ Tick:首位和末位不能同时抢，这说明至少有一个不能抢。
 2.考虑未位的房子我不抢，那么对于nouse[O]~house[last1]就是一个基本的House Robberl问题。
 ```
 
+**java代码：**
+
+```java
+class Solution {
+    public int rob(int[] nums) {
+        int n = nums.length;
+        if(n == 1) return nums[0];
+        /*f[i][0]:表示i位置不选，f[i][1]:表示i位置选择*/
+        int[][] f = new int[n][2];
+
+        // 1、第一个位置选，那么最后一个位置必须不选，最后的答案为f[n - 1][0]
+        f[0][0] = -Integer.MAX_VALUE;
+        f[0][1] = nums[0];
+        for(int i = 1; i < n; i ++) {
+            f[i][0] = Math.max(f[i - 1][0], f[i - 1][1]);
+            f[i][1] = f[i - 1][0] + nums[i];
+        }
+        int res = f[n - 1][0];
+
+        // 2、第一个位置不选，那么最后一个位置可以选择，也可以不选择
+        f[0][0] = 0;
+        f[0][1] = -Integer.MAX_VALUE;
+        for(int i = 1; i < n; i ++) {
+            f[i][0] = Math.max(f[i - 1][0], f[i - 1][1]);
+            f[i][1] = f[i - 1][0] + nums[i];
+        }
+        int ans = Math.max(f[n - 1][0], f[n - 1][1]);
+        return Math.max(res, ans);
+    }
+}
+```
+
+**go语言：**
+
+```go
+func rob(nums []int) int {
+    n, INF := len(nums), int(1e8)
+    if n == 1 {
+        return nums[0]
+    }
+    f := make([][]int, n)
+    for i := 0; i < n; i ++ {
+        f[i] = make([]int, 2)
+    }
+
+    /*1、第一个位置选，并且最后一个位置一定不选择*/
+    f[0][0], f[0][1] = -INF, nums[0]
+    for i := 1; i < n; i ++ {
+        f[i][0] = max(f[i - 1][0], f[i - 1][1])
+        f[i][1] = f[i - 1][0] + nums[i] 
+    }
+    res := f[n - 1][0]
+
+    /*2、第一个位置不选，则最后一个位置选择或者不选择两种情况*/
+    f[0][0], f[0][1] = 0, -INF
+    for i := 1; i < n; i ++ {
+        f[i][0] = max(f[i - 1][0], f[i - 1][1])
+        f[i][1] = f[i - 1][0] + nums[i]
+    }
+    ans := max(f[n - 1][0], f[n - 1][1])
+    return max(res, ans)
+}
+
+func max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+```
+
 
 
 #### [337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)(树形DP)
