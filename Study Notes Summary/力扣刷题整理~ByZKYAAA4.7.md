@@ -9328,92 +9328,6 @@ func max(a, b int) int {
 
 
 
-#### [337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)(树形DP)
-
-小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为 root 。
-
-除了 root 之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果 **两个直接相连的房子在同一天晚上被打劫** ，房屋将自动报警。
-
-给定二叉树的 root 。返回 **在不触动警报的情况下** ，小偷能够盗取的最高金额 。
-
-**示例 1：**
-
-![](https://assets.leetcode.com/uploads/2021/03/10/rob1-tree.jpg)
-
-```c
-输入: root = [3,2,3,null,3,null,1]
-输出: 7 
-解释: 小偷一晚能够盗取的最高金额 3 + 3 + 1 = 
-```
-
-**示例 2：**
-
-![](https://assets.leetcode.com/uploads/2021/03/10/rob2-tree.jpg)
-
-```c
-输入: root = [3,4,5,1,3,null,1]
-输出: 9
-解释: 小偷一晚能够盗取的最高金额 4 + 5 = 9
-```
-
-**提示：**
-
-- 树的节点数在 `[1, 10^4]` 范围内
-- `0 <= Node.val <= 10^4`
-
-**c++代码实现：**
-
-```c 
-    u
- /    \
-x      y
-1、根节点u,子节点x和y是相互独立的
-	（1）当不选u的时候
-        f[u][0]=max(f[x][0],f[x][1])+max(f[y][0],f[y][1]);
-    （2）当选择u的时候
-        f[u][1]=f[x][0]+f[y][0]
-2、最后取max(f[root][0],f[root][1])
-```
-
-```c
-/*
-        树形DP(上司的舞会阉割版):
-           u
-         /   \
-        x     y
-        1.不选择u,对于x和y两点，可以进行选择也可以不选择
-            f(u,0)=max(f(x,0),f(x,1)) + max(f(y,0),f(y,1));
-        2.选择u,不选x和y 
-            f(u,1)=f(x,0)+f(y,0)+u->val
-    */
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
-class Solution {
-public:
-    int rob(TreeNode* root) {
-        auto f=dfs(root);
-        return max(f[0],f[1]);
-    }
-
-    vector<int> dfs(TreeNode* u){
-        if (!u) return {0, 0};
-        auto x = dfs(u->left), y = dfs(u->right);
-        return {max(x[0], x[1]) + max(y[0], y[1]), x[0] + y[0] + u->val};
-    }
-};
-```
-
-#### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)(树形DP：换根DP)
-
 
 
 #### 状态机DP模型股票买卖：
@@ -11734,6 +11648,173 @@ public:
 ### 13、树形DP
 
 #### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)
+
+
+
+#### [337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)(树形DP)
+
+小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为 root 。
+
+除了 root 之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果 **两个直接相连的房子在同一天晚上被打劫** ，房屋将自动报警。
+
+给定二叉树的 root 。返回 **在不触动警报的情况下** ，小偷能够盗取的最高金额 。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2021/03/10/rob1-tree.jpg)
+
+```c
+输入: root = [3,2,3,null,3,null,1]
+输出: 7 
+解释: 小偷一晚能够盗取的最高金额 3 + 3 + 1 = 
+```
+
+**示例 2：**
+
+![](https://assets.leetcode.com/uploads/2021/03/10/rob2-tree.jpg)
+
+```c
+输入: root = [3,4,5,1,3,null,1]
+输出: 9
+解释: 小偷一晚能够盗取的最高金额 4 + 5 = 9
+```
+
+**提示：**
+
+- 树的节点数在 `[1, 10^4]` 范围内
+- `0 <= Node.val <= 10^4`
+
+**c++代码实现：**
+
+```c 
+    u
+ /    \
+x      y
+1、根节点u,子节点x和y是相互独立的
+	（1）当不选u的时候
+        f[u][0]=max(f[x][0],f[x][1])+max(f[y][0],f[y][1]);
+    （2）当选择u的时候
+        f[u][1]=f[x][0]+f[y][0]
+2、最后取max(f[root][0],f[root][1])
+```
+
+```c
+/*
+        树形DP(上司的舞会阉割版):
+           u
+         /   \
+        x     y
+        1.不选择u,对于x和y两点，可以进行选择也可以不选择
+            f(u,0)=max(f(x,0),f(x,1)) + max(f(y,0),f(y,1));
+        2.选择u,不选x和y 
+            f(u,1)=f(x,0)+f(y,0)+u->val
+    */
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int rob(TreeNode* root) {
+        auto f=dfs(root);
+        return max(f[0],f[1]);
+    }
+
+    vector<int> dfs(TreeNode* u){
+        if (!u) return {0, 0};
+        auto x = dfs(u->left), y = dfs(u->right);
+        return {max(x[0], x[1]) + max(y[0], y[1]), x[0] + y[0] + u->val};
+    }
+};
+```
+
+**java代码实现：**
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public int rob(TreeNode root) {
+        int[] f = dfs(root);
+        return Math.max(f[0], f[1]);
+    }
+
+    public int[] dfs(TreeNode root) {
+        if(root == null) {
+            return new int[]{0, 0};
+        }
+        int[] l = dfs(root.left);
+        int[] r = dfs(root.right);
+        
+        //1、不选root，那么l和r可以选择可以不选
+        int res = Math.max(l[0], l[1]) + Math.max(r[0], r[1]);
+        //2、选root,那么l和r不可以选择
+        int ans = l[0] + r[0] + root.val;
+        return new int[]{res, ans};
+    }
+}
+```
+
+**go代码实现：**
+
+```go
+/**
+ * Definition for a binary tree node.
+ * type TreeNode struct {
+ *     Val int
+ *     Left *TreeNode
+ *     Right *TreeNode
+ * }
+ */
+func rob(root *TreeNode) int {
+    f := dfs(root)
+    return max(f[0], f[1])
+}
+
+func dfs(root *TreeNode) [2]int {
+    if root == nil {
+        return [2]int{0, 0}
+    }
+    res := [2]int{0, 0}
+    l := dfs(root.Left)
+    r := dfs(root.Right)
+
+    res[0] = max(l[0], l[1]) + max(r[0], r[1])
+    res[1] = l[0] + r[0] + root.Val
+    return res
+}
+
+func max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+```
+
+
+
+#### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)(树形DP：换根DP)
 
 
 
