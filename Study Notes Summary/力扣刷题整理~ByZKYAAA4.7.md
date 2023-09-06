@@ -11647,7 +11647,221 @@ public:
 
 ### 13、树形DP
 
-#### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)
+#### [96. 不同的二叉搜索树](https://leetcode.cn/problems/unique-binary-search-trees/)
+
+给你一个整数 `n` ，求恰由 `n` 个节点组成且节点值从 `1` 到 `n` 互不相同的 **二叉搜索树** 有多少种？返回满足题意的二叉搜索树的种数。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2021/01/18/uniquebstn3.jpg)
+
+```
+输入：n = 3
+输出：5
+```
+
+**示例 2：**
+
+```
+输入：n = 1
+输出：1
+```
+
+**提示：**
+
+- `1 <= n <= 19`
+
+**c++代码：**
+
+```c
+class Solution {
+public:
+    /*
+    DP:
+    (1)状态表示：f[i]
+        1)集合: f[n]表示 n个节点的二叉搜索树共有多少种
+        2)属性:count
+    (2)状态计算
+        1)左子树可能有0, 1, 2, 3, 4,.....n-1个点
+        2)右子树可能有n-1, n-2, n-3,..... 0 个点
+        f[i]为所有的左边和右边的加和
+    */
+    int numTrees(int n) {
+        vector<int> f(n + 1);
+        f[0] = 1; //空子树
+        for(int i = 1; i <= n; i ++) {
+            f[i] = 0;
+            for(int j = 1; j <= i; j ++) {
+                f[i] += f[j - 1] * f[i - j]; 
+            }
+        }
+        return f[n];
+    }
+};
+```
+
+
+
+#### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)(或者换根DP)(todo)
+
+树是一个无向图，其中任何两个顶点只通过一条路径连接。 换句话说，一个任何没有简单环路的连通图都是一棵树。
+
+给你一棵包含 `n` 个节点的树，标记为 `0` 到 `n - 1` 。给定数字 `n` 和一个有 `n - 1` 条无向边的 `edges` 列表（每一个边都是一对标签），其中 `edges[i] = [ai, bi]` 表示树中节点 `ai` 和 `bi` 之间存在一条无向边。
+
+可选择树中任何一个节点作为根。当选择节点 `x` 作为根节点时，设结果树的高度为 `h` 。在所有可能的树中，具有最小高度的树（即，`min(h)`）被称为 **最小高度树** 。
+
+请你找到所有的 **最小高度树** 并按 **任意顺序** 返回它们的根节点标签列表。
+
+树的 **高度** 是指根节点和叶子节点之间最长向下路径上边的数量。
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2020/09/01/e1.jpg)
+
+```c++
+输入：n = 4, edges = [[1,0],[1,2],[1,3]]
+输出：[1]
+解释：如图所示，当根是标签为 1 的节点时，树的高度是 1 ，这是唯一的最小高度树。
+```
+
+**示例 2：**
+
+![](https://assets.leetcode.com/uploads/2020/09/01/e2.jpg)
+
+```
+输入：n = 6, edges = [[3,0],[3,1],[3,2],[3,4],[5,4]]
+输出：[3,4]
+```
+
+**提示：**
+
+- `1 <= n <= 2 * 10^4`
+- `edges.length == n - 1`
+- `0 <= ai, bi < n`
+- `ai != bi`
+- 所有 `(ai, bi)` 互不相同
+- 给定的输入 **保证** 是一棵树，并且 **不会有重复的边**
+
+**c++代码：**
+
+```c
+/*
+			/
+   		   p
+ 		/	  \
+	   u
+	/  |  \
+   S1  S2 S3
+当前节点root记为u
+up[u]:表示u往上走的最大长度	
+d1[u]:表示u往下走的最大长度
+d2[u]:表示u往下走的，除了最大值以外的其他路径的最大值，也就是次大值
+
+up[u] = max(up[p]+1,p向下走)
+	p向下走有两种情况：
+		(1) p往上走 up[p] + 1
+		(2) p往下走：
+			1) p往下走等于u往下走，d1[p]对应u
+			2) d1[p]走其他路线,d1[p] + 1
+max(up[u], d1[u])
+
+小-------d2-------d1---------大
+(1) 小-------d2-------d1----d-----大
+	此时最大值d1为d,次大值d2为d1
+	if(d >= d1[u]){
+		d2[u] = d1[u], d1[u] = d;
+		p2[u] = p1[u], p1[u] = x;
+	}
+	
+(2) 小-------d2----d----d1---------大
+	此时最大值d1为d1,不用更新；次大值d2为d
+	if(d > d2[u]) {	
+		d2[u] = d;
+		p2[u] = x;
+	}
+	
+(3) 小----d----d2-------d1---------大
+	此时不用更新
+	
+树形dp有两种，一种是用子结点信息去算根节点的信息（从下到上），另一种是用根节点信息去算子结点信息（从上到下），这题是两种都有所以要写两遍
+*/
+```
+
+```c
+class Solution {
+public:
+    vector<vector<int>> g; // 邻接表存图
+    // d1：往下走的最大距离，d2：往下走和最大距离不是同一个起始点的最大距离
+    // p1：d1的第一个扩展点，p2：d2的第一个扩展点
+    // up：往上走的最大距离
+    vector<int> d1, d2, p1, p2, up;
+
+    // 递归计算每个点往下走的最大距离d1和另一个扩展点的最大距离d2
+    // 以及对应的p1和p2
+    // father存一下每个点是从哪个点过来的
+    void dfs1(int u, int father) {
+        // 对于u的所有相邻的点
+        for (int x: g[u]) {
+            if (x == father) continue; // 不往回搜
+            dfs1(x, u); // 递归一下当前这个点往下走的最大距离
+            int d = d1[x] + 1; // u从这个x点往下走的最大距离就是d
+            // 如果距离更大，更新一下最大和“次大”
+            // 比最大还大
+            if (d >= d1[u]) {
+                d2[u] = d1[u]; // “次大”
+                d1[u] = d; // 最大
+                p2[u] = p1[u]; // 维护一下“次大”对应的扩展点
+                p1[u] = x; // 维护一下最大对应的扩展点
+            }
+            // 没有最大大，但是比“次大”要大
+            else if (d >= d2[u]) {
+                d2[u] = d;
+                p2[u] = x;
+            }
+        }
+    }
+
+    // 递归计算每个点往上走的最大距离up
+    // 这里传入u时是为它的所有相邻的点x计算up
+    void dfs2(int u, int father) {
+        for (int x: g[u]) {
+            if (x == father) continue;
+            // 如果从u往下走的最长边就是从x扩展的
+            // 那么从x往上走就只能用u的另一条路
+            if (p1[u] == x) up[x] = max(up[u], d2[u]) + 1;
+            // 如果从u往下走的最长边不是从x扩展的，那么就直接用这条从u的最长路
+            else up[x] = max(up[u], d1[u]) + 1;
+            dfs2(x, u);
+        }
+    }
+
+    vector<int> findMinHeightTrees(int n, vector<vector<int>>& edges) {
+        g.resize(n);
+        d1 = d2 = p1 = p2 = up = vector<int>(n);
+        // 存图
+        for (auto& e: edges) {
+            int a = e[0], b = e[1];
+            g[a].emplace_back(b), g[b].emplace_back(a);
+        }
+        // 递归计算往下走的d数组
+        dfs1(0, -1);
+        // 递归计算网上走的up数组
+        dfs2(0, -1);
+
+        // 先计算一下最小值
+        int mind = n + 1;
+        for (int i = 0; i < n; i ++ )
+            mind = min(mind, max(up[i], d1[i]));
+
+        // 把所有取到最小值的方案存下来
+        vector<int> res;
+        for (int i = 0; i < n; i ++ )
+            if (max(up[i], d1[i]) == mind)
+                res.emplace_back(i);
+        return res;
+    }
+};
+```
 
 
 
@@ -11812,9 +12026,126 @@ func max(a, b int) int {
 }
 ```
 
+#### [1245. 树的直径](https://leetcode.cn/problems/tree-diameter/)
+
+给你这棵「无向树」，请你测算并返回它的「直径」：这棵树上最长简单路径的 边数。
+
+我们用一个由所有「边」组成的数组 edges 来表示一棵无向树，其中 edges[i] = [u, v] 表示节点 u 和 v 之间的双向边。
+
+树上的节点都已经用 {0, 1, …, edges.length} 中的数做了标记，每个节点上的标记都是独一无二的。
+
+提示：
+
+```
+0 <= edges.length < 10^4
+edges[i][0] != edges[i][1]
+0 <= edges[i][j] <= edges.length
+edges 会形成一棵无向树
+```
+
+**示例 1：**
+
+```
+输入：edges = [[0,1],[0,2]]
+输出：2
+解释：
+这棵树上最长的路径是 1 - 0 - 2，边数为 2。
+```
+
+**示例 2：**
+
+```
+输入：edges = [[0,1],[1,2],[2,3],[1,4],[4,5]]
+输出：4
+解释：
+这棵树上最长的路径是 3 - 2 - 1 - 4 - 5，边数为 4。
+```
+
+**思路：**
+
+```
+在树形结构上求解问题，如果在某棵以 u 为根的树上的答案为 f(u)，v 是 u 的子节点，以 v 为根的树，也就是 u 的子树上的答案为 f(v)，如果 f(v) 构成 f(u) 的重复子问题的话，就可以用树形 DP 思路考虑了。
+
+树形 DP 的状态转移方向就是从子节点到父节点，过程就是假设当前在节点 u，首先拿到各个以 u 的子节点 v 为根的子树的答案，然后进行整合，形成当前树的答案，然后继续向上传。
+
+对于本题来说，树中的每个节点 u，我们都求一个经过 u 的最长链的长度，当树中的所有节点遍历完就可以得到整个树的最长链的长度了。
+
+假设在遍历过程中，当前节点为 u，经过当前节点 u 的最长链可以被 u 分为两部分。
+
+考虑这两部分与以 u 为根的子树的关系，有两种情况：
+
+(1) 一部分为以 u 为根的子树从 u 走到子树的叶子的最长链，另一部分不在以 u 为根的子树上；
+(2) 一部分为以 u 为根的子树从 u 走到子树的叶子的最长链，另一部分为以 u 为根的子树从 u 走到子树的叶子的次长链；
+
+下面我们写出动态规划的状态定义和转移方程：
+
+状态定义:
+dp[u][0] := 以 u 为根且包含 u 的最长链长度
+dp[u][1] := 以 u 为根且包含 u 的次长链长度
+
+答案:
+用 dp[u][0] + dp[u][1] 更新 ans
+
+初始化:
+dp[u][0] = 0   u 为叶子节点
+dp[u][1] = 0   u 为叶子节点
+
+状态转移:
+dp[u][0] = max(dp[v][0]) + 1          v 为 u 的子节点
+dp[u][1] = second_max(dp[v][0]) + 1   v 为 u 的子节点
+```
+
+**c++代码：**
+
+```c
+注意到在节点 u 时，状态转移过程只需要 dp[v][0]，而不需要 dp[v][1]，因此 dfs 仅返回 dp[v][0] 即可。
+
+代码中 max1 表示 dp[u][0], max2 表示 dp[u][1]。
+```
+
+```c
+class Solution {
+public:
+    int treeDiameter(vector<vector<int>>& edges) {
+        int n = edges.size();
+        vector<vector<int> > g(n + 1);
+        for(const auto &e: edges)
+        {
+            g[e[0]].push_back(e[1]);
+            g[e[1]].push_back(e[0]);
+        }
+        int ans = 0;
+        dfs(0, -1, g, ans);
+        return ans;
+    }
+
+private:
+    int dfs(int u, int fa, const vector<vector<int> >& g, int& ans)
+    {
+        int max1 = 0, max2 = 0;
+        for(int v: g[u])
+        {
+            if(v != fa)
+            {
+                int t = dfs(v, u, g, ans) + 1;
+                if(max1 < t)
+                {
+                    max2 = max1;
+                    max1 = t;
+                }
+                else if(max2 < t)
+                    max2 = t;
+            }
+        }
+        ans = max(ans, (max1 + max2));
+        return max1;
+    }
+};
+```
 
 
-#### [310. 最小高度树](https://leetcode.cn/problems/minimum-height-trees/)(树形DP：换根DP)
+
+#### [1522. N 叉树的直径](https://leetcode.cn/problems/diameter-of-n-ary-tree/description/)
 
 
 
