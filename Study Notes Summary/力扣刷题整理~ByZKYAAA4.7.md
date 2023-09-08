@@ -11543,6 +11543,135 @@ func Min(a, b int) int {
 
 ### 11、状态压缩DP
 
+#### [464. 我能赢吗](https://leetcode.cn/problems/can-i-win/)
+
+#### [526. 优美的排列](https://leetcode.cn/problems/beautiful-arrangement/)
+
+假设有从 1 到 n 的 n 个整数。用这些整数构造一个数组 `perm`（**下标从 1 开始**），只要满足下述条件 **之一** ，该数组就是一个 **优美的排列** ：
+
+- `perm[i]` 能够被 `i` 整除
+- `i` 能够被 `perm[i]` 整除
+
+给你一个整数 `n` ，返回可以构造的 **优美排列** 的 **数量** 。
+
+**示例 1：**
+
+```
+输入：n = 2
+输出：2
+解释：
+第 1 个优美的排列是 [1,2]：
+    - perm[1] = 1 能被 i = 1 整除
+    - perm[2] = 2 能被 i = 2 整除
+第 2 个优美的排列是 [2,1]:
+    - perm[1] = 2 能被 i = 1 整除
+    - i = 2 能被 perm[2] = 1 整除
+```
+
+**示例 2：**
+
+```
+输入：n = 1
+输出：1
+```
+
+**提示：**
+
+- `1 <= n <= 15`
+
+**c++代码：**
+
+```c
+class Solution {
+public:
+    int countArrangement(int n) {
+        /*
+        状态压缩dp
+        f[i]表示前i位置用了1~n的哪些数，i+1位置找到没有用的满足条件的放到里面
+        属性：count
+        */
+
+        vector<int> f(1<<n);
+        f[0]=1;
+        for(int i=0;i<1<<n;i++){
+            //k表示前i位置已经填充了几个数了
+            int k=0;
+            for(int j=0;j<n;j++){
+                //看i的第j位是否为1
+                if(i >> j &1) 
+                    k++;
+            }
+
+            //更新答案
+            for(int j=0;j<n;j++){
+                //如果该位置没有用过看是否满足答案
+                if(!(i>>j & 1)){
+                    if((k+1)%(j+1)==0 || (j+1)%(k+1)==0){
+                        //将第j位更新
+                        f[i | (1<<j)]+=f[i];
+                    }
+                }
+            }
+        }
+        return f[(1<<n)-1];
+    }
+};
+```
+
+**java代码：**
+
+```java
+class Solution {
+    public int countArrangement(int n) {
+        int[] f = new int[1<<n];
+        f[0] = 1;
+
+        for(int i = 0; i < 1 << n; i ++) {
+            int k = 0;
+            for(int j = 0; j < n; j ++) {
+                if((i>>j & 1) == 1)
+                    k ++;
+            }
+            for(int j = 0; j < n; j ++) {
+                if((i >> j & 1)==0) {
+                    if((k+1) % (j + 1) == 0  || (j + 1) % (k + 1) == 0)
+                        //将第j位置置为1
+                        f[i|(1<<j)] += f[i];
+                }
+            }
+        }
+        return f[(1<<n)-1];
+    }
+}
+```
+
+**go代码：**
+
+```go
+func countArrangement(n int) int {
+    f := make([]int, 1<<n);
+    f[0] = 1;
+    for i := 0; i < 1<<n; i ++ {
+        k := 0 
+        for j := 0; j < n; j ++ {
+            if (i >> j & 1) == 1 {
+                k ++
+            }
+        }
+        for j := 0; j < n; j ++ {
+            if (i >> j & 1) == 0 {
+                if (k + 1) % (j + 1) == 0 || (j + 1) % (k + 1) == 0 {
+                    f[i | (1 << j)] += f[i]
+                }
+            }
+        }
+    }
+    return f[(1 << n) - 1]
+}
+```
+
+
+
 ### 12、数位DP
 
 #### [902. 最大为 N 的数字组合](https://leetcode.cn/problems/numbers-at-most-n-given-digit-set/)
