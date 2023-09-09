@@ -11545,6 +11545,142 @@ func Min(a, b int) int {
 
 #### [464. 我能赢吗](https://leetcode.cn/problems/can-i-win/)
 
+在 "100 game" 这个游戏中，两名玩家轮流选择从 `1` 到 `10` 的任意整数，累计整数和，先使得累计整数和 **达到或超过** 100 的玩家，即为胜者。
+
+如果我们将游戏规则改为 “玩家 **不能** 重复使用整数” 呢？
+
+例如，两个玩家可以轮流从公共整数池中抽取从 1 到 15 的整数（不放回），直到累计整数和 >= 100。
+
+给定两个整数 `maxChoosableInteger` （整数池中可选择的最大数）和 `desiredTotal`（累计和），若先出手的玩家能稳赢则返回 `true` ，否则返回 `false` 。假设两位玩家游戏时都表现 **最佳** 。
+
+**示例 1：**
+
+```
+输入：maxChoosableInteger = 10, desiredTotal = 11
+输出：false
+解释：
+无论第一个玩家选择哪个整数，他都会失败。
+第一个玩家可以选择从 1 到 10 的整数。
+如果第一个玩家选择 1，那么第二个玩家只能选择从 2 到 10 的整数。
+第二个玩家可以通过选择整数 10（那么累积和为 11 >= desiredTotal），从而取得胜利.
+同样地，第一个玩家选择任意其他整数，第二个玩家都会赢。
+```
+
+**示例 2:**
+
+```
+输入：maxChoosableInteger = 10, desiredTotal = 0
+输出：true
+```
+
+**示例 3:**
+
+```
+输入：maxChoosableInteger = 10, desiredTotal = 1
+输出：true
+```
+
+**提示:**
+
+- `1 <= maxChoosableInteger <= 20`
+- `0 <= desiredTotal <= 300`
+
+**c++代码：**
+
+```c
+class Solution {
+public:
+    /*
+    博弈论问题+状态压缩
+    (1)由于题目说明了n 不会超过20，可以用一个int的二进制位来表示状态，某一位是1表明对应的数已经被用过了。则用f[state]表示当前是state状态下，我开始用，那么是必胜还是必败。
+    (2)边界就是，可以去枚举一下每一个没有用的数，只要存在一个位置，用这个位置使得总和>=m，那么当前状态就是必胜状态。
+    (3)对于不是边界的情况，只要存在一个状态能向必败状态的转移(也就是我报用完之后对手是必败的)，那么它就是一个必胜状态。如果我能转移的所有状态都是必胜状态，那么也就是对手必胜了，那么我当前就是处于一个必败的状态。
+    (4)因为转移都比较无序，所以可以用记忆化搜索来做
+    */
+    vector<int> f; // -1：没算过，1：必胜，0：必败
+    int N, M;
+
+    int dp(int x) {
+        if(f[x] != -1) return f[x]; //已经算过
+        int sum = 0; //计算当前的累计和是多少
+        for(int i = 0; i < N; i ++) {
+            if(x >> i & 1)  //如果当前的状态i对应位置是1，则将其累加到sum中
+                sum += i + 1;
+        }
+        // 枚举还没有选过的
+        for(int i = 0; i < N; i ++) {
+            if(x >> i & 1) continue;    //跳过已经被选的
+            if(sum + i + 1 >= M) return f[x] = 1; //否则没选，则加到sum，看满足条件没
+            // 如果从某个位置往后走是必败状态，那么当前也是必胜的
+            if(dp(x + (1 << i)) == 0) return f[x] = 1;
+        }
+        // 至此，当前是必败状态，因为每个后继都是必胜的
+        return f[x] = 0;
+    }
+
+    bool canIWin(int n, int m) {
+        N = n, M  = m;
+        if(N*(N+1)<M) return false; //全部总和加起来都不满足
+        f.resize(1 << n, -1); // -1表示还没有使用
+        
+        return dp(0);
+    }
+};
+```
+
+**go代码：**
+
+```go
+var (
+    n, m int
+    f []int
+)
+
+func dp(x int) bool {
+    if f[x] != -1 {
+        return f[x] == 1
+    }
+    sum := 0
+    for i := 0; i < n; i ++ {
+        if (x >> i) & 1 == 1 {
+            sum += i + 1
+        }
+    }
+
+    for i := 0 ; i < n; i ++ {
+        if (x >> i & 1) == 1 {
+            continue
+        }
+        if sum + i + 1 >= m {
+            f[x] = 1
+            return true
+        }
+        if !dp(x + (1 << i)) {
+            f[x] = 1
+            return true
+        }
+    }
+    f[x] = 0
+    return false
+}
+func canIWin(maxChoosableInteger int, desiredTotal int) bool {
+    n, m = maxChoosableInteger, desiredTotal
+
+    if (n * (n + 1) / 2) < m {
+        return false
+    }
+    f = make([]int, 1 << 20)
+    for i := 0; i < 1 << 20; i ++ {
+        f[i] = -1
+    }
+    return dp(0);
+}
+```
+
+
+
+
+
 #### [526. 优美的排列](https://leetcode.cn/problems/beautiful-arrangement/)
 
 假设有从 1 到 n 的 n 个整数。用这些整数构造一个数组 `perm`（**下标从 1 开始**），只要满足下述条件 **之一** ，该数组就是一个 **优美的排列** ：
