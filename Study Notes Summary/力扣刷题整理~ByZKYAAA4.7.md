@@ -4161,7 +4161,195 @@ public:
 };
 ```
 
-**5、记忆化搜索（DP）**
+### 6、计数
+
+#### [980. 不同路径 III](https://leetcode.cn/problems/unique-paths-iii/)
+
+在二维网格 `grid` 上，有 4 种类型的方格：
+
+- `1` 表示起始方格。且只有一个起始方格。
+- `2` 表示结束方格，且只有一个结束方格。
+- `0` 表示我们可以走过的空方格。
+- `-1` 表示我们无法跨越的障碍。
+
+返回在四个方向（上、下、左、右）上行走时，从起始方格到结束方格的不同路径的数目**。**
+
+**每一个无障碍方格都要通过一次，但是一条路径中不能重复通过同一个方格**。
+
+ **示例 1：**
+
+```
+输入：[[1,0,0,0],[0,0,0,0],[0,0,2,-1]]
+输出：2
+解释：我们有以下两条路径：
+1. (0,0),(0,1),(0,2),(0,3),(1,3),(1,2),(1,1),(1,0),(2,0),(2,1),(2,2)
+2. (0,0),(1,0),(2,0),(2,1),(1,1),(0,1),(0,2),(0,3),(1,3),(1,2),(2,2)
+
+```
+
+**示例 2：**
+
+```
+输入：[[1,0,0,0],[0,0,0,0],[0,0,0,2]]
+输出：4
+解释：我们有以下四条路径： 
+1. (0,0),(0,1),(0,2),(0,3),(1,3),(1,2),(1,1),(1,0),(2,0),(2,1),(2,2),(2,3)
+2. (0,0),(0,1),(1,1),(1,0),(2,0),(2,1),(2,2),(1,2),(0,2),(0,3),(1,3),(2,3)
+3. (0,0),(1,0),(2,0),(2,1),(2,2),(1,2),(1,1),(0,1),(0,2),(0,3),(1,3),(2,3)
+4. (0,0),(1,0),(2,0),(2,1),(1,1),(0,1),(0,2),(0,3),(1,3),(1,2),(2,2),(2,3)
+
+```
+
+**示例 3：**
+
+```
+输入：[[0,1],[2,0]]
+输出：0
+解释：
+没有一条路能完全穿过每一个空的方格一次。
+请注意，起始和结束方格可以位于网格中的任意位置。
+
+```
+
+**提示：**
+
+- `1 <= grid.length * grid[0].length <= 20`
+
+**c++代码：**
+
+```c
+class Solution {
+public:
+    vector<vector<int>> g;
+    int n,m,k;  // k表示当前还有多少空格子需要遍历
+    int dx[4]={-1,0,1,0},dy[4]={0,1,0,-1};
+
+    int uniquePathsIII(vector<vector<int>>& grid) {
+        g=grid;
+        n=g.size(),m=g[0].size();
+        int stx,sty;    //起始坐标
+        k=0;
+
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(g[i][j]==1) stx=i,sty=j,k++;
+                else if(!g[i][j]) k++;  // 0表示需要走过得空方格
+            }
+        }
+        return dfs(stx,sty);
+    }
+
+    int dfs(int x,int y){
+        //到达目的地了，并且都走完了
+        if(g[x][y]==2){
+            if(!k) return 1;
+            return 0;
+        }
+        int res=0;
+        g[x][y]=-1,k--;
+        for(int i=0;i<4;i++){
+            int a=x+dx[i],b=y+dy[i];
+            if(a>=0 && a<n && b>=0 && b<m && g[a][b]!=-1){
+                res+=dfs(a,b);
+            }
+        }
+        //恢复现场
+        g[x][y]=0,k++;
+        return res;
+    }
+};
+```
+
+**java代码：**
+
+```java
+class Solution {
+    int[][] g;
+    int n, m, k;
+    int st, ed;
+    int[] dx = {0, 1, 0, -1};
+    int[] dy = {-1, 0, 1, 0};
+
+    public int uniquePathsIII(int[][] grid) {
+        g = grid;
+        k = 0;
+        n = grid.length;
+        m = grid[0].length;
+
+        for(int i = 0; i < n; i ++) {
+            for(int j = 0; j < m; j ++) {
+                if(grid[i][j] == 1) {
+                    st = i;
+                    ed = j;
+                    k ++;
+                }else if(grid[i][j] == 0) k ++;
+            }
+        }
+        return dfs(st, ed, grid);
+    }
+
+    int dfs(int x, int y, int[][] g) {
+        if(g[x][y] == 2) {
+            if(k == 0) return 1;
+            return 0;
+        }
+        int res = 0;
+        g[x][y] = -1;
+        k --;
+
+        for(int i = 0; i < 4; i ++) {
+            int a = x + dx[i], b = y + dy[i];
+            if(a < 0 || a >= n || b < 0 || b >= m || g[a][b] == -1) continue;
+            res += dfs(a, b, g);
+        }
+        g[x][y] = 0;
+        k ++;
+        return res;
+    }
+}
+```
+
+**go代码：**
+
+```go
+var dx, dy = [4]int{-1, 0, 1, 0}, [4]int{0, 1, 0, -1}
+
+func uniquePathsIII(grid [][]int) int {
+    n , m := len(grid), len(grid[0])
+    st , ed, k := 0, 0, 0
+    for i := 0; i < n; i ++ {
+        for j := 0; j < m; j ++ {
+            if grid[i][j] == 1 {
+                st, ed, k = i, j, k + 1
+            }else if grid[i][j] == 0 {
+                k ++;
+            }
+        }
+    }
+    var dfs func(x int, y int, k int) int
+    dfs = func(x int, y int, k int) int {
+        if grid[x][y] == 2 {
+            if k == 0 {
+                return 1
+            } 
+            return 0
+        }
+
+        res := 0
+        grid[x][y], k = -1, k - 1
+        for i := 0; i < 4; i ++ {
+            a , b := x + dx[i], y + dy[i]
+            if a < 0 || a >= n || b < 0 || b >= m || grid[a][b] == -1 {
+                continue
+            }
+            res += dfs(a, b, k)
+        } 
+        grid[x][y], k = 0, k + 1
+        return res
+    }
+    return dfs(st, ed, k)
+}
+```
 
 
 
