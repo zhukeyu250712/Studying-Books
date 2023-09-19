@@ -11994,6 +11994,138 @@ func countArrangement(n int) int {
 }
 ```
 
+#### [847. 访问所有节点的最短路径](https://leetcode.cn/problems/shortest-path-visiting-all-nodes/)(BFS)
+
+存在一个由 `n` 个节点组成的无向连通图，图中的节点按从 `0` 到 `n - 1` 编号。
+
+给你一个数组 `graph` 表示这个图。其中，`graph[i]` 是一个列表，由所有与节点 `i` 直接相连的节点组成。
+
+返回能够访问所有节点的最短路径的长度。你可以在任一节点开始和停止，也可以多次重访节点，并且可以重用边。
+
+ **示例 1：**
+
+![](https://assets.leetcode.com/uploads/2021/05/12/shortest1-graph.jpg)
+
+```
+输入：graph = [[1,2,3],[0],[0],[0]]
+输出：4
+解释：一种可能的路径为 [1,0,2,0,3]
+```
+
+**示例 2：**
+
+![](https://assets.leetcode.com/uploads/2021/05/12/shortest2-graph.jpg)
+
+```
+输入：graph = [[1],[0,2,4],[1,3,4],[2],[1,2]]
+输出：4
+解释：一种可能的路径为 [0,1,4,2,3]
+```
+
+**提示：**
+
+- `n == graph.length`
+- `1 <= n <= 12`
+- `0 <= graph[i].length < n`
+- `graph[i]` 不包含 `i`
+- 如果 `graph[a]` 包含 `b` ，那么 `graph[b]` 也包含 `a`
+- 输入的图总是连通图
+
+**c++代码:**
+
+```c
+f[i][j]:表示走过的点集为 i，且最后处于点 j 的所有路径中长度的最小值 
+    j -> k
+    j可以走到k，则用j更新k位置
+    f[i | 1 << j][k] = f[i][j] + 1
+    每个点可以重复走，如果j,k都属于i，则i | 1 << j 可以直接使用 i
+    f[i][j] = f[i][k]
+    存在循环依赖，不能使用传统图论DP的方法来求
+    
+解决：多源BFS
+    DP是特殊的最短路
+```
+
+```c
+#define x first
+#define y second
+typedef pair<int, int> PII;
+
+class Solution {
+public:
+    int shortestPathLength(vector<vector<int>>& g) {
+        int n = g.size(), INF = 1e8;
+        vector<vector<int>> f(1 << n, vector<int>(n, INF));
+
+        queue<PII> q;
+        //多源，枚举每个位置
+        for(int i = 0; i < n; i ++) {
+            int a = 1 << i, b = i;
+            f[a][b] = 0;
+            q.push({a, b});
+        }
+
+        while(q.size()) {
+            auto t = q.front();
+            q.pop();
+
+            // 枚举 t.y 相邻边 k
+            for(int k : g[t.y]) {
+                int a = t.x | 1 << k, b = k;
+                if(f[a][b] > f[t.x][t.y] + 1) {
+                    f[a][b] = f[t.x][t.y] + 1;
+                    q.push({a, b});
+                }
+            }
+        }
+
+        int res = INF;
+        for(int i = 0; i < n; i ++) {
+            res = min(res, f[(1<<n) - 1][i]);
+        }
+        return res;
+    }
+};
+```
+
+**java代码：**
+
+```java
+class Solution {
+    public int shortestPathLength(int[][] graph) {
+        int n = graph.length;
+        int[][] f = new int[1 << n][n];
+        Queue<int[]> q = new LinkedList<>();
+
+        for(int i = 0; i < 1 << n; i ++) {
+            Arrays.fill(f[i], Integer.MAX_VALUE);
+        }
+
+        for(int i = 0; i < n; i ++) {
+            f[1 << i][i] = 0;
+            q.offer(new int[]{1 << i, i});
+        }
+
+        while(!q.isEmpty()) {
+            int[] u = q.poll();
+            int ux = u[0], uy = u[1];
+            for(int k : graph[uy]) {
+                int a = ux | 1 << k, b = k;
+                if(f[a][b] > f[ux][uy] + 1) {
+                    f[a][b] = f[ux][uy] + 1;
+                    q.offer(new int[]{a, b});
+                }
+            }
+        }
+        int res = Integer.MAX_VALUE;
+        for(int i = 0; i < n; i ++) {
+            res = Math.min(res, f[(1 << n) - 1][i]);
+        }
+        return res;
+    }
+}
+```
+
 
 
 ### 12、数位DP
