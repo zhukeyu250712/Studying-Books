@@ -7235,7 +7235,7 @@ public:
 
 相似题目[560. 和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/)
 
-### 1、滑动窗口
+### 1、定长滑动窗口
 
 #### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
 
@@ -7298,6 +7298,74 @@ public:
     }
 };
 ```
+
+#### [567. 字符串的排列](https://leetcode.cn/problems/permutation-in-string/)
+
+给你两个字符串 `s1` 和 `s2` ，写一个函数来判断 `s2` 是否包含 `s1` 的排列。如果是，返回 `true` ；否则，返回 `false` 。
+
+换句话说，`s1` 的排列之一是 `s2` 的 **子串** 。
+
+**示例 1：**
+
+```
+输入：s1 = "ab" s2 = "eidbaooo"
+输出：true
+解释：s2 包含 s1 的排列之一 ("ba").
+```
+
+**示例 2：**
+
+```
+输入：s1= "ab" s2 = "eidboaoo"
+输出：false
+```
+
+**提示：**
+
+- `1 <= s1.length, s2.length <= 104`
+- `s1` 和 `s2` 仅包含小写字母
+
+c++代码实现：
+
+```c
+class Solution {
+public:
+    unordered_map<char, int> S1, S2;
+
+    bool check(char c) {
+        if (S1.count(c) && S1[c] == S2[c])
+            return true;
+        return false;
+    }
+
+    bool checkInclusion(string s1, string s2) {
+        for (auto c: s1) S1[c] ++ ;
+        // cnt表示S1和S2中存在几个相等的
+        for (int i = 0, j = 0, cnt = 0; i < s2.size(); i ++ ) {
+            // 还没加s2[i]的时候，如果s1和s2相等,则加了就不一样了，需要减
+            if (check(s2[i])) cnt -- ;
+            S2[s2[i]] ++ ;
+            // 加了s2[i]，检查是否相等，
+            if (check(s2[i])) cnt ++ ;
+
+            if (i - j >= s1.size()) {
+                // 减之前相等了，减了则不同，需要减
+                if (check(s2[j])) cnt -- ;
+                S2[s2[j]] -- ;
+                if (check(s2[j])) cnt ++ ;
+                j ++ ;
+            }
+            if (cnt == S1.size()) return true;
+        }
+
+        return false;
+    }
+};
+```
+
+#### [438. 找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
+
+
 
 #### [1425. 带限制的子序列和](https://leetcode.cn/problems/constrained-subsequence-sum/)（todo）
 
